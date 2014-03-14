@@ -9,11 +9,11 @@ import java.util.zip.ZipOutputStream;
 public class Zipper {
 	// http://www.quizful.net/post/java-zip-archiving
 	public void zip(File zippableFolder, String destFolder) throws IOException {
-		System.out.println("\nzip(): ïàêóåì " + zippableFolder + "; â "+destFolder);
+		System.out.println("\nzip(): Ð¿Ð°ÐºÑƒÐµÐ¼ " + zippableFolder + "; Ð² "+destFolder);
 		final String filename = destFolder+"\\"+zippableFolder.getName()+".zip";
-		System.out.println("Èìÿ ôàéëà zip-àðõèâà: " + filename);
+		System.out.println("Ð˜Ð¼Ñ Ñ„Ð°Ð¹Ð»Ð° zip-Ð°Ñ€Ñ…Ð¸Ð²Ð°: " + filename);
 		if(new File(filename).exists()){
-			System.out.println("Âûõîäèì èç ôóíêöèè àðõèâàöèè, ò. ê. zip-àðõèâ óæå ñóùåñòâóåò.\n");
+			System.out.println("Ð’Ñ‹Ñ…Ð¾Ð´Ð¸Ð¼ Ð¸Ð· Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ Ð°Ñ€Ñ…Ð¸Ð²Ð°Ñ†Ð¸Ð¸, Ñ‚. Ðº. zip-Ð°Ñ€Ñ…Ð¸Ð² ÑƒÐ¶Ðµ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚.\n");
 			return;
 		}
 		
@@ -23,10 +23,10 @@ public class Zipper {
         
         for(File zippableFile : zippableFolder.listFiles()){
         	if(zippableFile.isDirectory()) continue;
-        	System.out.println("Ôàéë äëÿ àðõèâèðîâàíèÿ: " + zippableFile);
-            ZipEntry ze = new ZipEntry(zippableFile.getName());//Èìÿ ôàéëà - èìÿ ôàéëà â àðõèâå
+        	System.out.println("Ð¤Ð°Ð¹Ð» Ð´Ð»Ñ Ð°Ñ€Ñ…Ð¸Ð²Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ: " + zippableFile);
+            ZipEntry ze = new ZipEntry(zippableFile.getName());//Ð˜Ð¼Ñ Ñ„Ð°Ð¹Ð»Ð° - Ð¸Ð¼Ñ Ñ„Ð°Ð¹Ð»Ð° Ð² Ð°Ñ€Ñ…Ð¸Ð²Ðµ
             zout.putNextEntry(ze);
-            //îòïðàâêà äàííûõ â ïîòîê zout
+            //Ð¾Ñ‚Ð¿Ñ€Ð°Ð²ÐºÐ° Ð´Ð°Ð½Ð½Ñ‹Ñ… Ð² Ð¿Ð¾Ñ‚Ð¾Ðº zout
             FileInputStream in = new FileInputStream(zippableFile); 
             int len; 
             while ((len = in.read(buf)) > 0) { 

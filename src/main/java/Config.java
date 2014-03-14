@@ -15,7 +15,7 @@ public class Config {
 	private final String destFolder = "destFolder";
 	private final String ftpFolder = "ftpFolder";
 	
-	// Конструктор
+	// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
 	private Config() throws ConfigurationException{
 		File configfile = new File(filename);
 		if(!configfile.exists()){
@@ -57,9 +57,9 @@ public class Config {
 	}
 	
 	public FtpUploader[] createFtpWorkerArray() throws ConfigurationException {
-		// получить количество_серверов
+		// РїРѕР»СѓС‡РёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ_СЃРµСЂРІРµСЂРѕРІ
 		int size = xmlConfig.getList("servers.server.url").size();
-		//создать массив/аррэйлист
+		//СЃРѕР·РґР°С‚СЊ РјР°СЃСЃРёРІ/Р°СЂСЂСЌР№Р»РёСЃС‚
 		FtpUploader[] ftpa = new FtpUploader[size];
 		
 		List<HierarchicalConfiguration> servers = 
@@ -81,13 +81,13 @@ public class Config {
 				String msg0 = e.getMessages()[0];
 				String msg1 = e.getMessages()[1];
 				//String msg2 = e.getMessages()[2];
-				System.out.println("Ошибка считывания: для элемента:\"" + msg0 + "\" ошибка:\"" + msg1 + "\"");
+				System.out.println("РћС€РёР±РєР° СЃС‡РёС‚С‹РІР°РЅРёСЏ: РґР»СЏ СЌР»РµРјРµРЅС‚Р°:\"" + msg0 + "\" РѕС€РёР±РєР°:\"" + msg1 + "\"");
 				throw e;
 			}
 		} 
 		
 		
-		// фор и=0; и<количество_серверов; и++
+		// С„РѕСЂ Рё=0; Рё<РєРѕР»РёС‡РµСЃС‚РІРѕ_СЃРµСЂРІРµСЂРѕРІ; Рё++
 		
 		return ftpa;
 	}
@@ -97,8 +97,8 @@ public class Config {
 		xmlConfig.setEncoding("UTF-8");
 		xmlConfig.setFileName(filename);
 		xmlConfig.setRootElementName("sample-xml-configuration");
-		xmlConfig.addProperty(lookupFolder, "E:\\Мои документы\\МИРЭА\\Защита Информации");
-		xmlConfig.addProperty(destFolder, "E:\\Мои документы\\МИРЭА\\Защита Информации");
+		xmlConfig.addProperty(lookupFolder, "E:\\РњРѕРё РґРѕРєСѓРјРµРЅС‚С‹\\РњРР Р­Рђ\\Р—Р°С‰РёС‚Р° РРЅС„РѕСЂРјР°С†РёРё");
+		xmlConfig.addProperty(destFolder, "E:\\РњРѕРё РґРѕРєСѓРјРµРЅС‚С‹\\РњРР Р­Рђ\\Р—Р°С‰РёС‚Р° РРЅС„РѕСЂРјР°С†РёРё");
 		xmlConfig.addProperty(ftpFolder, "public_html");
 		
 		xmlConfig.addProperty("servers.server(0).url", "ftp.server1.com");

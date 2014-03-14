@@ -31,8 +31,8 @@ public class FtpUploader {
 		// FTPClient ftpClient = new FTPClient();
 		ftpClient.connect(address, port);
 		ftpClient.login(username, password);
-		System.out.println("Подключился? " + ftpClient.isConnected());
-		System.out.println("Доступен? " + ftpClient.isAvailable());
+		System.out.println("РџРѕРґРєР»СЋС‡РёР»СЃСЏ? " + ftpClient.isConnected());
+		System.out.println("Р”РѕСЃС‚СѓРїРµРЅ? " + ftpClient.isAvailable());
 		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
 		ftpClient.enterLocalPassiveMode();
 		// ftpClient.ent
@@ -43,9 +43,9 @@ public class FtpUploader {
 	public FTPFile[] getListOfFile(String folder) throws IOException {
 		FTPClient ftpClient = connectToFTP(domain, port, userName, pass);
 		ftpClient.setListHiddenFiles(true);
-		// побочное действие: меняет текущую директорию
+		// РїРѕР±РѕС‡РЅРѕРµ РґРµР№СЃС‚РІРёРµ: РјРµРЅСЏРµС‚ С‚РµРєСѓС‰СѓСЋ РґРёСЂРµРєС‚РѕСЂРёСЋ
 		FTPFile[] listFtpFile = ftpClient.listFiles("/"+folder);
-		System.out.println("Список файлов на FTP в папке " + folder);
+		System.out.println("РЎРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РЅР° FTP РІ РїР°РїРєРµ " + folder);
 		for (FTPFile ftpFile1 : listFtpFile) {
 			System.out.println("Name - \"" + ftpFile1.getName().toString()
 					+ "\" " + "Size - " + ftpFile1.getSize() + "Link - "
@@ -54,14 +54,14 @@ public class FtpUploader {
 					 * ftpFile1.getLink().toString() :
 					 */"" + "Type - " + ftpFile1.getType());
 		}
-		System.out.println("Конец списка файлов на FTP в папке " + folder);
+		System.out.println("РљРѕРЅРµС† СЃРїРёСЃРєР° С„Р°Р№Р»РѕРІ РЅР° FTP РІ РїР°РїРєРµ " + folder);
 		showServerReply();
 		close();
 		return listFtpFile;
 	}
 
 	private void changeOrMake(String ftpFolder) throws IOException {
-		// смена папки
+		// СЃРјРµРЅР° РїР°РїРєРё
 		// http://stackoverflow.com/questions/4078642/create-a-folder-hierarchy-through-ftp-in-java/4079002#4079002
 		ftpClient.changeWorkingDirectory("/");
 		ftpClient.makeDirectory(ftpFolder);
@@ -93,7 +93,7 @@ public class FtpUploader {
 		};
 
 		// ftpClient.setCopyStreamListener(listener);
-		System.out.println("Загрузка началась ...");
+		System.out.println("Р—Р°РіСЂСѓР·РєР° РЅР°С‡Р°Р»Р°СЃСЊ ...");
 
 		long c = Util.copyStream(fileInputStream, ftpOutStream,
 				Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
@@ -108,10 +108,10 @@ public class FtpUploader {
 
 		//showServerReply();
 		
-		// storeFileStream() требует вызова completePendingCommand() после всего
-		// 150 - это норма (c) Е. Малышева. А если серьёзно, то http://stackoverflow.com/questions/14307898/apache-commons-net-completependingcommand-returning-false/15915879#15915879
+		// storeFileStream() С‚СЂРµР±СѓРµС‚ РІС‹Р·РѕРІР° completePendingCommand() РїРѕСЃР»Рµ РІСЃРµРіРѕ
+		// 150 - СЌС‚Рѕ РЅРѕСЂРјР° (c) Р•. РњР°Р»С‹С€РµРІР°. Рђ РµСЃР»Рё СЃРµСЂСЊС‘Р·РЅРѕ, С‚Рѕ http://stackoverflow.com/questions/14307898/apache-commons-net-completependingcommand-returning-false/15915879#15915879
 		
-		// Закомментировал, потому что тупой sitescopy.ru не может нормально отдать запрос
+		// Р—Р°РєРѕРјРјРµРЅС‚РёСЂРѕРІР°Р», РїРѕС‚РѕРјСѓ С‡С‚Рѕ С‚СѓРїРѕР№ sitescopy.ru РЅРµ РјРѕР¶РµС‚ РЅРѕСЂРјР°Р»СЊРЅРѕ РѕС‚РґР°С‚СЊ Р·Р°РїСЂРѕСЃ
 		//int r;
 		//if((r = ftpClient.getReply())!=150){
 			System.out.println("point 1");
@@ -132,7 +132,7 @@ public class FtpUploader {
 	}
 
 	public void printStatus() throws IOException {
-		System.out.println("Статус: " + ftpClient.getStatus());
+		System.out.println("РЎС‚Р°С‚СѓСЃ: " + ftpClient.getStatus());
 	}
 
 	public void close() throws IOException {
@@ -158,13 +158,13 @@ public class FtpUploader {
 		for (FTPFile ftpFile : ftpfiles) {
 			if (ftpFile.isFile()
 					&& ftpFile.getName().equals(zippedFile.getName())) {
-				System.out.println("Файл " + zippedFile
-						+ " существует на FTP в папке " + ftpfolder);
+				System.out.println("Р¤Р°Р№Р» " + zippedFile
+						+ " СЃСѓС‰РµСЃС‚РІСѓРµС‚ РЅР° FTP РІ РїР°РїРєРµ " + ftpfolder);
 				
 				return true;
 			}
 		}
-		System.out.println("Файл " + zippedFile + " не существует на FTP в папке "
+		System.out.println("Р¤Р°Р№Р» " + zippedFile + " РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ РЅР° FTP РІ РїР°РїРєРµ "
 				+ ftpfolder);
 		
 		return false;

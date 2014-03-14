@@ -12,16 +12,16 @@ public class Launcher {
 		System.out.println("HELLO.");
 						
 		File rootDir = new File(lookupFolder);
-		System.out.println("Проверка просматриваемой папки...");
-		System.out.println("Путь: "+rootDir.getAbsolutePath());
-		System.out.println("Существует? "+rootDir.exists());
-		System.out.println("Папка? "+rootDir.isDirectory());
+		System.out.println("РџСЂРѕРІРµСЂРєР° РїСЂРѕСЃРјР°С‚СЂРёРІР°РµРјРѕР№ РїР°РїРєРё...");
+		System.out.println("РџСѓС‚СЊ: "+rootDir.getAbsolutePath());
+		System.out.println("РЎСѓС‰РµСЃС‚РІСѓРµС‚? "+rootDir.exists());
+		System.out.println("РџР°РїРєР°? "+rootDir.isDirectory());
 		
 		Zipper zipper = new Zipper();
-		System.out.println("Папка расположения zip-архивов: " + destFolder);
+		System.out.println("РџР°РїРєР° СЂР°СЃРїРѕР»РѕР¶РµРЅРёСЏ zip-Р°СЂС…РёРІРѕРІ: " + destFolder);
 		for(File zippableFolder : rootDir.listFiles()){
 			if(zippableFolder.isDirectory()){
-				System.out.println("Папка-Кандидат на запаковку: " + zippableFolder.getAbsolutePath());
+				System.out.println("РџР°РїРєР°-РљР°РЅРґРёРґР°С‚ РЅР° Р·Р°РїР°РєРѕРІРєСѓ: " + zippableFolder.getAbsolutePath());
 				zipper.zip(zippableFolder, destFolder);
 			}
 		}
@@ -52,16 +52,16 @@ public class Launcher {
 			ftpa = Config.getInstance().createFtpWorkerArray();
 		
 			for(FtpUploader ftp: ftpa){
-				System.out.println("\nРаботаем с FTP " + ftp.getUrl());
+				System.out.println("\nР Р°Р±РѕС‚Р°РµРј СЃ FTP " + ftp.getUrl());
 				for(File zippedFile : lookup.listFiles(fileNameFilter)){
-					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
-					System.out.println("Полный путь к файлу"+zippedFile.getAbsolutePath());
+					System.out.println("\nР—Р°Р»РёРІР°РµРј С„Р°Р№Р» "+zippedFile.getName() + " РЅР° FTP...");
+					System.out.println("РџРѕР»РЅС‹Р№ РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ"+zippedFile.getAbsolutePath());
 					
 					if(!ftp.isExists(zippedFile, ftpFolder)){
 						boolean isLoad = ftp.uploadToFTP(zippedFile, ftpFolder);
-						System.out.println("Залит? "+isLoad);
+						System.out.println("Р—Р°Р»РёС‚? "+isLoad);
 					}else{
-						System.out.println("Файл " + zippedFile.getName() + " не был залит, поскольку он уже существует на FTP.");
+						System.out.println("Р¤Р°Р№Р» " + zippedFile.getName() + " РЅРµ Р±С‹Р» Р·Р°Р»РёС‚, РїРѕСЃРєРѕР»СЊРєСѓ РѕРЅ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ РЅР° FTP.");
 					}
 				}
 					
@@ -69,7 +69,7 @@ public class Launcher {
 			}
 
 		} catch (ConfigurationException e) {
-			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());
+			System.out.println("РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ СЃРїРёСЃРєР° СЃРµСЂРІРµСЂРѕРІ : " + e.getStackTrace());
 		}
 	}
 
