@@ -10,6 +10,7 @@ public class Launcher {
 	
 	public static void main(String[] args) throws IOException{
 		System.out.println("HELLO.");
+		//System.in.read();
 						
 		File rootDir = new File(lookupFolder);
 		System.out.println("Проверка просматриваемой папки...");
