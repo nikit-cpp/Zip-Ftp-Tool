@@ -56,7 +56,7 @@ public class Config {
 		return value;
 	}
 	
-	public FtpUploader[] createFtpWorkerArray() throws ConfigurationException {
+	public FtpUploader[] createFtpUploaderArray() throws ConfigurationException {
 		// получить количество_серверов
 		int size = xmlConfig.getList("servers.server.url").size();
 		//создать массив/аррэйлист
