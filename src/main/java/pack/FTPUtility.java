@@ -9,6 +9,7 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.impl.StandardFileSystemManager;
+import org.apache.commons.vfs2.provider.ftp.FtpFileSystemConfigBuilder;
 import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 
 /**
@@ -19,16 +20,16 @@ import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
  * @author Ashok
  * 
  */
-public class SFTPUtility {
+public class FTPUtility {
 
     public static void main(String[] args) {
-        String hostName = "31.170.165.159";
-        String username = "u716321491";
-        String password = "strike00";
+        String hostName = "";
+        String username = "";
+        String password = "";
 
         String localFilePath = "C:\\FakePath\\FakeFile.txt";
-        String remoteFilePath = "/FakeRemotePath/FakeRemoteFile.txt";       
-        String remoteTempFilePath = "/FakeRemoteTempPath/FakeRemoteTempFile.txt";
+        String remoteFilePath = "/public_html/FakeRemoteFile.txt";       
+        String remoteTempFilePath = "/public_html/FakeRemoteTempPath/FakeRemoteTempFile.txt";
 
         upload(hostName, username, password, localFilePath, remoteFilePath);
         exist(hostName, username, password, remoteFilePath);
@@ -240,7 +241,7 @@ public class SFTPUtility {
      * @return concatenated SFTP URL string
      */
     public static String createConnectionString(String hostName, String username, String password, String remoteFilePath) {
-        return "sftp://" + username + ":" + password + "@" + hostName + "/" + remoteFilePath;
+        return "ftp://" + username + ":" + password + "@" + hostName + "/" + remoteFilePath;
     }
 
     /**
@@ -254,20 +255,7 @@ public class SFTPUtility {
         // Create SFTP options
         FileSystemOptions opts = new FileSystemOptions();
 
-        // SSH Key checking
-        SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");
-
-        /*
-         * Using the following line will cause VFS to choose File System's Root
-         * as VFS's root. If I wanted to use User's home as VFS's root then set
-         * 2nd method parameter to "true"
-         */
-        // Root directory set to user home
-        SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(opts, false);
-
-        // Timeout is count by Milliseconds
-        SftpFileSystemConfigBuilder.getInstance().setTimeout(opts, 10000);
-
+        FtpFileSystemConfigBuilder.getInstance().setPassiveMode(opts, true);
         return opts;
     }
 }
