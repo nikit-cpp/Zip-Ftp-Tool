@@ -58,12 +58,7 @@ public class Launcher {
 					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
 					System.out.println("Полный путь к файлу"+zippedFile.getAbsolutePath());
 					
-					if(!ftp.isExists(zippedFile, ftpFolder_)){
-						boolean isLoad = ftp.uploadToFTP(zippedFile, ftpFolder_);
-						System.out.println("Залит? "+isLoad);
-					}else{
-						System.out.println("Файл " + zippedFile.getName() + " не был залит, поскольку он уже существует на FTP.");
-					}
+					ftp.uploadToFTP(zippedFile, ftpFolder_);
 				}
 					
 				//ftp.close();

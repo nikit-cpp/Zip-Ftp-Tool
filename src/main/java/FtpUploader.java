@@ -2,49 +2,66 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
+import org.eclipse.core.runtime.Path;
 
 public class FtpUploader {
-	private String domain;
+	private String server;
 	private int port;
 	private String userName;
 	private String pass;
-	private final FTPClient ftpClient;
+	private FTPClient ftpClient;
 
-	public FtpUploader(String domain, int port, String userName, String pass) {
-		this.domain = domain;
+	public FtpUploader(String server, int port, String userName, String pass) {
+		this.server = server;
 		this.port = port;
 		this.userName = userName;
 		this.pass = pass;
-		this.ftpClient = new FTPClient();
+	}
+		
+	private void connectToFTP() throws IOException {
+		if(ftpClient!=null)
+			return;
+		
+		ftpClient = new FTPClient();
+		
+		ftpClient.connect(server, port);
+
+		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
+		// enter passive mode before you log in
+		ftpClient.enterLocalPassiveMode();
+
+		ftpClient.login(userName, pass);
+		
+		System.out.println("Подключился? " + ftpClient.isConnected());
+		System.out.println("Доступен? " + ftpClient.isAvailable());
+		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
+		// ftpClient.ent
+		printStatus();
 		// ftpClient.setCharset(Charset.forName("UTF-8"));
 		ftpClient.setControlEncoding("UTF-8");
 	}
 
-	public FTPClient connectToFTP(String address, int port, String username,
-			String password) throws IOException {
-		// FTPClient ftpClient = new FTPClient();
-		ftpClient.connect(address, port);
-		ftpClient.login(username, password);
-		System.out.println("Подключился? " + ftpClient.isConnected());
-		System.out.println("Доступен? " + ftpClient.isAvailable());
-		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
-		ftpClient.enterLocalPassiveMode();
-		// ftpClient.ent
-		printStatus();
-		return ftpClient;
-	}
-
 	public FTPFile[] getListOfFile(String folder) throws IOException {
-		FTPClient ftpClient = connectToFTP(domain, port, userName, pass);
+		ftpClient=null; // ещё один костыль для apache ftp
+		connectToFTP();
+		
 		ftpClient.setListHiddenFiles(true);
+		showServerReply();
+		ftpClient.enterLocalPassiveMode();
 		// побочное действие: меняет текущую директорию
-		FTPFile[] listFtpFile = ftpClient.listFiles("/"+folder);
+		Path p = new Path(folder);
+		p.append(folder);
+		String s = p.toString();
+		System.out.println("Path in getListOfFile(): " + s);
+		
+		FTPFile[] listFtpFile = ftpClient.listFiles(s);
 		System.out.println("Список файлов на FTP в папке " + folder);
 		for (FTPFile ftpFile1 : listFtpFile) {
 			System.out.println("Name - \"" + ftpFile1.getName().toString()
@@ -56,30 +73,41 @@ public class FtpUploader {
 		}
 		System.out.println("Конец списка файлов на FTP в папке " + folder);
 		showServerReply();
-		close();
+		ftpCloseStub();
 		return listFtpFile;
 	}
 
-	private void changeOrMake(String ftpFolder) throws IOException {
+	private void makeFtpFolder(String ftpFolder) throws IOException {
 		// смена папки
 		// http://stackoverflow.com/questions/4078642/create-a-folder-hierarchy-through-ftp-in-java/4079002#4079002
 		ftpClient.changeWorkingDirectory("/");
-		ftpClient.makeDirectory(ftpFolder);
+		if(!ftpFolder.equals(ftpFolder)) // костыль для fake ftp
+			ftpClient.makeDirectory(ftpFolder);
 		ftpClient.changeWorkingDirectory(ftpFolder);
 		showServerReply();
 
 	}
+	
+	private FileInputStream fileInputStream;
+	private OutputStream ftpOutStream;
 
 	public boolean uploadToFTP(final File file, String ftpFolder)
 			throws IOException {
-		FTPClient ftpClient = connectToFTP(domain, port, userName, pass);
-		FileInputStream fileInputStream = new FileInputStream(file);
+		connectToFTP();
+		fileInputStream = new FileInputStream(file);
 
-		changeOrMake(ftpFolder);
+		makeFtpFolder(ftpFolder);
 
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-		OutputStream ftpOutStream = ftpClient.storeFileStream(file.getName());
+		
+		ftpOutStream = ftpClient.storeFileStream(file.getName());
 
+		// Выходим, если файлы существуют на сервере
+		if(isExists(file, ftpFolder)){
+			streamsClose();
+			return false;
+		}
+		
 		CopyStreamListener listener = new CopyStreamListener() {
 			public void bytesTransferred(long totalBytesTransferred,
 					int bytesTransferred, long streamSize) {
@@ -99,34 +127,22 @@ public class FtpUploader {
 				Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
 		System.out.printf("\n%-30S: %d\n", "Bytes sent", c);
 		System.out.println("point -1");
-		ftpOutStream.close();
-		System.out.println("point 0");
-		fileInputStream.close();
-
-		//boolean isUploaded = // ftpClient.storeFile(file.getName(),
-								// fileInputStream);
-
-		//showServerReply();
 		
-		// storeFileStream() требует вызова completePendingCommand() после всего
-		// 150 - это норма (c) Е. Малышева. А если серьёзно, то http://stackoverflow.com/questions/14307898/apache-commons-net-completependingcommand-returning-false/15915879#15915879
-		
-		// Закомментировал, потому что тупой sitescopy.ru не может нормально отдать запрос
-		//int r;
-		//if((r = ftpClient.getReply())!=150){
-			System.out.println("point 1");
-			if (!ftpClient.completePendingCommand()) {
-				close();
-				System.err.println("File transfer failed.");
-				System.exit(1);
-			}
-			
+		streamsClose();
+
+		// судя по этому http://mail-archives.apache.org/mod_mbox/commons-user/200412.mbox/%3CBAEAD6E55CF4ED4784B506D39CCD1D4131B89E@tshuscodenmbx02.ERF.THOMSON.COM%3E
+		// в javadoc'е - устаревшая инфа.
+		// я тупо решил проблнму, убрав этот оператор
+		System.out.println("point 1");
+		//if (!ftpClient.completePendingCommand()) {
+		//	ftpCloseStub();
+		//	return false;
 		//}
-		//System.out.println("reply: " + r);
+			
 		System.out.println("point 2");
 //		showServerReply();
 		System.out.println("point 3");
-		close();
+		ftpCloseStub();
 		System.out.println("point 4");
 		return true;
 	}
@@ -135,9 +151,24 @@ public class FtpUploader {
 		System.out.println("Статус: " + ftpClient.getStatus());
 	}
 
-	public void close() throws IOException {
+	public void ftpCloseStub() throws IOException {
+		//ftpClient.logout();
+		//ftpClient.disconnect();
+	}
+	
+	public void ftpClose2() throws IOException {
 		ftpClient.logout();
 		ftpClient.disconnect();
+	}
+	
+	private void streamsClose(){
+		try {
+			ftpOutStream.close();
+			System.out.println("point 0");
+			fileInputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// http://stackoverflow.com/questions/15174271/apache-commons-net-ftp-ftpclient-not-uploading-the-file-to-the-required-folder/15179429#15179429
@@ -171,6 +202,6 @@ public class FtpUploader {
 	}
 
 	public String getUrl() {
-		return domain;
+		return server;
 	}
 }
