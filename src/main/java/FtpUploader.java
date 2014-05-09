@@ -46,20 +46,23 @@ public class FtpUploader {
 		printStatus();
 		// ftpClient.setCharset(Charset.forName("UTF-8"));
 		ftpClient.setControlEncoding("UTF-8");
+		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 	}
 
 	public FTPFile[] getListOfFile(String folder) throws IOException {
-		ftpClient=null; // ещё один костыль для apache ftp
+		FTPClient tempFtpClient = ftpClient;
+		ftpClient=null;
 		connectToFTP();
 		
 		ftpClient.setListHiddenFiles(true);
 		showServerReply();
-		ftpClient.enterLocalPassiveMode();
+
 		// побочное действие: меняет текущую директорию
-		Path p = new Path(folder);
+		/*Path p = new Path(folder);
 		p.append(folder);
-		String s = p.toString();
-		System.out.println("Path in getListOfFile(): " + s);
+		String s = p.toPortableString();
+		System.out.println("Path in getListOfFile(): " + s);*/
+		String s = folder;
 		
 		FTPFile[] listFtpFile = ftpClient.listFiles(s);
 		System.out.println("Список файлов на FTP в папке " + folder);
@@ -74,6 +77,10 @@ public class FtpUploader {
 		System.out.println("Конец списка файлов на FTP в папке " + folder);
 		showServerReply();
 		ftpCloseStub();
+		
+		dropConnection();
+		ftpClient = tempFtpClient;
+		System.out.println(ftpClient);
 		return listFtpFile;
 	}
 
@@ -93,12 +100,12 @@ public class FtpUploader {
 
 	public boolean uploadToFTP(final File file, String ftpFolder)
 			throws IOException {
+		dropConnection();
 		connectToFTP();
 		fileInputStream = new FileInputStream(file);
 
 		makeFtpFolder(ftpFolder);
 
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 		
 		ftpOutStream = ftpClient.storeFileStream(file.getName());
 
@@ -107,6 +114,7 @@ public class FtpUploader {
 			streamsClose();
 			return false;
 		}
+		System.out.println("Готовность к заливке");
 		
 		CopyStreamListener listener = new CopyStreamListener() {
 			public void bytesTransferred(long totalBytesTransferred,
@@ -119,10 +127,16 @@ public class FtpUploader {
 			public void bytesTransferred(CopyStreamEvent event) {
 			}
 		};
+		
+		/*System.out.println("Желаем залить файл " + file + "?");
+		int charcode = System.in.read();
+		if(!(charcode =='Y' || charcode =='y' )){
+			streamsClose();
+			return false;
+		}*/
 
 		// ftpClient.setCopyStreamListener(listener);
 		System.out.println("Загрузка началась ...");
-
 		long c = Util.copyStream(fileInputStream, ftpOutStream,
 				Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
 		System.out.printf("\n%-30S: %d\n", "Bytes sent", c);
@@ -132,12 +146,12 @@ public class FtpUploader {
 
 		// судя по этому http://mail-archives.apache.org/mod_mbox/commons-user/200412.mbox/%3CBAEAD6E55CF4ED4784B506D39CCD1D4131B89E@tshuscodenmbx02.ERF.THOMSON.COM%3E
 		// в javadoc'е - устаревшая инфа.
-		// я тупо решил проблнму, убрав этот оператор
+		// я тупо решил проблему, убрав этот оператор
 		System.out.println("point 1");
 		//if (!ftpClient.completePendingCommand()) {
-		//	ftpCloseStub();
-		//	return false;
-		//}
+		// 	ftpCloseStub();
+		// 	return false;
+		// }
 			
 		System.out.println("point 2");
 //		showServerReply();
@@ -156,9 +170,11 @@ public class FtpUploader {
 		//ftpClient.disconnect();
 	}
 	
-	public void ftpClose2() throws IOException {
+	public void dropConnection() throws IOException {
+		if (ftpClient==null) return;
 		ftpClient.logout();
 		ftpClient.disconnect();
+		ftpClient=null;
 	}
 	
 	private void streamsClose(){

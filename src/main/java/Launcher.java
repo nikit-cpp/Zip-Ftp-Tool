@@ -61,7 +61,7 @@ public class Launcher {
 					ftp.uploadToFTP(zippedFile, ftpFolder_);
 				}
 					
-				//ftp.close();
+				ftp.dropConnection();
 			}
 
 		} catch (ConfigurationException e) {

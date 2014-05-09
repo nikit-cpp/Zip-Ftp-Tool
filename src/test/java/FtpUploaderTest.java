@@ -42,29 +42,9 @@ public class FtpUploaderTest {
 		os.close();
 
 		ftpUploader.uploadToFTP(temp, HOME_DIR);
-		ftpUploader.ftpClose2();
+		ftpUploader.dropConnection();
 	}
 
-	//@Before
-	public void setUp() throws Exception {
-		fakeFtpServer = new FakeFtpServer();
-		fakeFtpServer.setServerControlPort(0); // use any free port
-
-		fileSystem = new UnixFakeFileSystem();
-		fileSystem.add(new FileEntry(FILE_full_name, FILE_CONTENTS));
-		fileSystem.add(new FileEntry("/file0", "qwerty"));
-		fileSystem.add(new FileEntry("/file1", "zxcv"));
-		fakeFtpServer.setFileSystem(fileSystem);
-
-		UserAccount userAccount = new UserAccount(login, password, HOME_DIR);
-		fakeFtpServer.addUserAccount(userAccount);
-
-		fakeFtpServer.start();
-		int port = fakeFtpServer.getServerControlPort();
-
-		ftpUploader = new FtpUploader("localhost", port, login, password);
-	}
-	
 	@Before
 	public void setUp2() throws Exception {
 		fakeFtpServer = new FakeFtpServer();
