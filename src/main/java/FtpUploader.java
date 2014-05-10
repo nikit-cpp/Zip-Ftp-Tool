@@ -27,14 +27,13 @@ public class FtpUploader {
 		this.pass = pass;
 	}
 
-	public boolean doFtpStart() {
+	public void doFtpStart() {
 		if (ftpClient != null)
-			return false;
+			return;
 
 		ftpClient = new FTPClient();
-		boolean error = false;
 		try {
-			int reply;
+			System.out.println("Подключение...");
 			ftpClient.connect(server, port);
 			System.out.println("Connected to " + server + ".");
 			checkReply();
@@ -42,15 +41,16 @@ public class FtpUploader {
 			// //////////////////////////////////////////
 			// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
 			// enter passive mode before you log in
+			System.out.println("Вход в локальный пасивный режим...");
 			ftpClient.enterLocalPassiveMode();
 			checkReply();
 			
+			System.out.println("Логин...");
 			ftpClient.login(userName, pass);
-			System.out.println("Подключился? " + ftpClient.isConnected());
-			System.out.println("Доступен? " + ftpClient.isAvailable());
 			// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
 			checkReply();
 
+			System.out.println("Установка кодировки и бинарного режима...");
 			ftpClient.setControlEncoding("UTF-8");
 			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 			// //////////////////////////////////////////
@@ -61,20 +61,16 @@ public class FtpUploader {
 			checkReply();
 			System.out.println("Готовность к пидараче файлов");
 		} catch (IOException e) {
-			error = true;
-			e.printStackTrace();
+			throw new RuntimeException("Не удалось подключицца...");
 		}
-		return error;
 	}
 
-	public boolean doFtpEnd() {
-		boolean error = false;
+	public void doFtpEnd() {
 		try {
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
 		} catch (IOException e) {
-			error = true;
-			e.printStackTrace();
+			// do nothing
 		} finally {
 			if (ftpClient.isConnected()) {
 				try {
@@ -85,7 +81,6 @@ public class FtpUploader {
 				}
 			}
 		}
-		return error;
 	}
 
 	@Deprecated
