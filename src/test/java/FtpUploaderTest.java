@@ -29,7 +29,8 @@ public class FtpUploaderTest {
 	private static final String FILE_path = "/dir";
 	private static final String FILE_name = "sample";
 	private static final String FILE_ext = ".txt";
-	private static final String FILE_full_name = FILE_path + "/" + FILE_name + FILE_ext;
+	private static final String FILE_name_ext = FILE_name + FILE_ext;
+	private static final String FILE_full_name = FILE_path + "/" + FILE_name_ext;
 		
 	private static final String FILE_CONTENTS = "abcdef 1234567890";
 	private static final String login = "login";
@@ -40,10 +41,14 @@ public class FtpUploaderTest {
 
 	private FileSystem fileSystem;
 	
-	@Test/*(timeout=2000)*/
+	@Test(timeout=2000)
 	public void testGetListOfFile() throws IOException {
-		FTPFile[] xFiles = ftpUploader.getListOfFile(FILE_path); // TODO
-		assertThat(xFiles, is(not((null))));
+		FTPFile[] xFiles = ftpUploader.getListOfFile(FILE_path);
+		assertThat(xFiles, is(not(nullValue())));
+		
+		// Утверждаем что у нас 1 файл
+		assertThat(xFiles.length, is(1));
+		assertThat(xFiles[0].getName(), is(FILE_name_ext));
 	}
 	
 	@Ignore

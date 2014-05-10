@@ -116,8 +116,7 @@ public class FtpUploader {
 		// ftpClient.setListHiddenFiles(true);
 		// checkReply();
 		
-		System.out.println("Запрашиваю текущую папку...");
-		System.out.println(ftpClient.printWorkingDirectory());
+		System.out.println("Запрос текущей папки: " + ftpClient.printWorkingDirectory());
 		checkReply();
 				
 		// возможно, в зависимости от сервера -- побочное действие: меняет текущую директорию
@@ -126,7 +125,7 @@ public class FtpUploader {
 		for (FTPFile file : listFtpFile) {
 			System.out.println("\"" + file.getName() + "\", " + file.getSize() + " bytes");
 		}
-		System.out.println("Конец списка файлов на FTP в папке " + folder);
+		System.out.println("Конец списка файлов на FTP в папке " + folder+'\n');
 		checkReply();
 		
 		System.out.println("Запрашиваю текущую папку в конце...");
