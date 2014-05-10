@@ -3,6 +3,7 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.hamcrest.CoreMatchers.*;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
@@ -33,7 +34,12 @@ public class FtpUploaderTest {
 	private FileSystem fileSystem;
 
 	@Test(timeout=2000)
-	public void testUploadToFTP() throws IOException {
+	public void testDoFTP() throws IOException {
+		assertThat(ftpUploader.doFtp(), is(false));
+	}
+	
+	@Test(timeout=2000)
+	public void testMultipleUploadToFTP() throws IOException {
 		File temp = File.createTempFile(FILE_name, FILE_ext);
 		System.out.println(temp.getAbsolutePath());
 				

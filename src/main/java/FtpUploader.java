@@ -5,7 +5,9 @@ import java.io.OutputStream;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
@@ -24,13 +26,51 @@ public class FtpUploader {
 		this.userName = userName;
 		this.pass = pass;
 	}
-		
-	private void connectToFTP() throws IOException {
-		if(ftpClient!=null)
+
+	public boolean doFtp(){
+	    FTPClient ftp = new FTPClient();
+	    boolean error = false;
+	    try {
+	      int reply;
+	      ftp.connect(server, port);
+	      System.out.println("Connected to " + server + ".");
+	      System.out.print(ftp.getReplyString());
+
+	      // After connection attempt, you should check the reply code to verify
+	      // success.
+	      reply = ftp.getReplyCode();
+
+	      if(!FTPReply.isPositiveCompletion(reply)) {
+	        ftp.disconnect();
+	        System.err.println("FTP server refused connection.");
+	        System.exit(1);
+	      }
+	      // TODO transfer files here
+	      System.out.println("Готовность к пидараче файлов");
+	      
+	      System.out.println("Logout");
+	      ftp.logout();
+	    } catch(IOException e) {
+	      error = true;
+	      e.printStackTrace();
+	    } finally {
+	      if(ftp.isConnected()) {
+	        try {
+	          ftp.disconnect();
+	        } catch(IOException ioe) {
+	          // do nothing
+	        }
+	      }
+	    }
+	    return error;
+	}
+
+	public void connectToFTP() throws IOException {
+		if (ftpClient != null)
 			return;
-		
+
 		ftpClient = new FTPClient();
-		
+
 		ftpClient.connect(server, port);
 
 		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
@@ -38,7 +78,7 @@ public class FtpUploader {
 		ftpClient.enterLocalPassiveMode();
 
 		ftpClient.login(userName, pass);
-		
+
 		System.out.println("Подключился? " + ftpClient.isConnected());
 		System.out.println("Доступен? " + ftpClient.isAvailable());
 		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
@@ -51,19 +91,20 @@ public class FtpUploader {
 
 	public FTPFile[] getListOfFile(String folder) throws IOException {
 		FTPClient tempFtpClient = ftpClient;
-		ftpClient=null;
+		ftpClient = null;
 		connectToFTP();
-		
+
 		ftpClient.setListHiddenFiles(true);
 		showServerReply();
 
 		// побочное действие: меняет текущую директорию
-		/*Path p = new Path(folder);
-		p.append(folder);
-		String s = p.toPortableString();
-		System.out.println("Path in getListOfFile(): " + s);*/
+		/*
+		 * Path p = new Path(folder); p.append(folder); String s =
+		 * p.toPortableString(); System.out.println("Path in getListOfFile(): "
+		 * + s);
+		 */
 		String s = folder;
-		
+
 		FTPFile[] listFtpFile = ftpClient.listFiles(s);
 		System.out.println("Список файлов на FTP в папке " + folder);
 		for (FTPFile ftpFile1 : listFtpFile) {
@@ -77,7 +118,7 @@ public class FtpUploader {
 		System.out.println("Конец списка файлов на FTP в папке " + folder);
 		showServerReply();
 		ftpCloseStub();
-		
+
 		dropConnection();
 		ftpClient = tempFtpClient;
 		System.out.println(ftpClient);
@@ -88,13 +129,13 @@ public class FtpUploader {
 		// смена папки
 		// http://stackoverflow.com/questions/4078642/create-a-folder-hierarchy-through-ftp-in-java/4079002#4079002
 		ftpClient.changeWorkingDirectory("/");
-		if(!ftpFolder.equals(ftpFolder)) // костыль для fake ftp
+		if (!ftpFolder.equals(ftpFolder)) // костыль для fake ftp
 			ftpClient.makeDirectory(ftpFolder);
 		ftpClient.changeWorkingDirectory(ftpFolder);
 		showServerReply();
 
 	}
-	
+
 	private FileInputStream fileInputStream;
 	private OutputStream ftpOutStream;
 
@@ -106,16 +147,15 @@ public class FtpUploader {
 
 		makeFtpFolder(ftpFolder);
 
-		
 		ftpOutStream = ftpClient.storeFileStream(file.getName());
 
 		// Выходим, если файлы существуют на сервере
-		if(isExists(file, ftpFolder)){
+		if (isExists(file, ftpFolder)) {
 			streamsClose();
 			return false;
 		}
 		System.out.println("Готовность к заливке");
-		
+
 		CopyStreamListener listener = new CopyStreamListener() {
 			public void bytesTransferred(long totalBytesTransferred,
 					int bytesTransferred, long streamSize) {
@@ -127,13 +167,12 @@ public class FtpUploader {
 			public void bytesTransferred(CopyStreamEvent event) {
 			}
 		};
-		
-		/*System.out.println("Желаем залить файл " + file + "?");
-		int charcode = System.in.read();
-		if(!(charcode =='Y' || charcode =='y' )){
-			streamsClose();
-			return false;
-		}*/
+
+		/*
+		 * System.out.println("Желаем залить файл " + file + "?"); int charcode
+		 * = System.in.read(); if(!(charcode =='Y' || charcode =='y' )){
+		 * streamsClose(); return false; }
+		 */
 
 		// ftpClient.setCopyStreamListener(listener);
 		System.out.println("Загрузка началась ...");
@@ -141,20 +180,21 @@ public class FtpUploader {
 				Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
 		System.out.printf("\n%-30S: %d\n", "Bytes sent", c);
 		System.out.println("point -1");
-		
+
 		streamsClose();
 
-		// судя по этому http://mail-archives.apache.org/mod_mbox/commons-user/200412.mbox/%3CBAEAD6E55CF4ED4784B506D39CCD1D4131B89E@tshuscodenmbx02.ERF.THOMSON.COM%3E
+		// судя по этому
+		// http://mail-archives.apache.org/mod_mbox/commons-user/200412.mbox/%3CBAEAD6E55CF4ED4784B506D39CCD1D4131B89E@tshuscodenmbx02.ERF.THOMSON.COM%3E
 		// в javadoc'е - устаревшая инфа.
 		// я тупо решил проблему, убрав этот оператор
 		System.out.println("point 1");
-		//if (!ftpClient.completePendingCommand()) {
-		// 	ftpCloseStub();
-		// 	return false;
+		// if (!ftpClient.completePendingCommand()) {
+		// ftpCloseStub();
+		// return false;
 		// }
-			
+
 		System.out.println("point 2");
-//		showServerReply();
+		// showServerReply();
 		System.out.println("point 3");
 		ftpCloseStub();
 		System.out.println("point 4");
@@ -166,18 +206,19 @@ public class FtpUploader {
 	}
 
 	public void ftpCloseStub() throws IOException {
-		//ftpClient.logout();
-		//ftpClient.disconnect();
+		// ftpClient.logout();
+		// ftpClient.disconnect();
 	}
-	
+
 	public void dropConnection() throws IOException {
-		if (ftpClient==null) return;
+		if (ftpClient == null)
+			return;
 		ftpClient.logout();
 		ftpClient.disconnect();
-		ftpClient=null;
+		ftpClient = null;
 	}
-	
-	private void streamsClose(){
+
+	private void streamsClose() {
 		try {
 			ftpOutStream.close();
 			System.out.println("point 0");
@@ -199,21 +240,21 @@ public class FtpUploader {
 
 	public boolean isExists(File zippedFile, String ftpfolder)
 			throws IOException {
-		//boolean ret = true;
-		
+		// boolean ret = true;
+
 		FTPFile[] ftpfiles = getListOfFile(ftpfolder);
 		for (FTPFile ftpFile : ftpfiles) {
 			if (ftpFile.isFile()
 					&& ftpFile.getName().equals(zippedFile.getName())) {
 				System.out.println("Файл " + zippedFile
 						+ " существует на FTP в папке " + ftpfolder);
-				
+
 				return true;
 			}
 		}
-		System.out.println("Файл " + zippedFile + " не существует на FTP в папке "
-				+ ftpfolder);
-		
+		System.out.println("Файл " + zippedFile
+				+ " не существует на FTP в папке " + ftpfolder);
+
 		return false;
 	}
 
