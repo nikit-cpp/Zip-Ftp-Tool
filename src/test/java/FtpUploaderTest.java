@@ -1,5 +1,6 @@
 import static org.junit.Assert.*;
 
+import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -19,13 +20,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+/*
+ * Здесь интеграционные тесты
+ * */
 public class FtpUploaderTest {
 	private static final String HOME_DIR = "/";
 	
-	private static final String FILE_path = "/dir/";
+	private static final String FILE_path = "/dir";
 	private static final String FILE_name = "sample";
 	private static final String FILE_ext = ".txt";
-	private static final String FILE_full_name = FILE_path + FILE_name + FILE_ext;
+	private static final String FILE_full_name = FILE_path + "/" + FILE_name + FILE_ext;
 		
 	private static final String FILE_CONTENTS = "abcdef 1234567890";
 	private static final String login = "login";
@@ -35,18 +39,12 @@ public class FtpUploaderTest {
 	private FakeFtpServer fakeFtpServer;
 
 	private FileSystem fileSystem;
-
-	@Test(timeout=2000)
-	public void testDoFTPStartEnd() throws IOException {
-		ftpUploader.doFtpStart();
-		ftpUploader.doFtpEnd();
-	}
 	
-	/*@Test(timeout=2000)
-	public void testDoFTPStartEnd() throws IOException {
-		assertThat(ftpUploader.doFtpStart(), is(false));
-		assertThat(ftpUploader.doFtpEnd(), is(false));
-	}*/
+	@Test/*(timeout=2000)*/
+	public void testGetListOfFile() throws IOException {
+		FTPFile[] xFiles = ftpUploader.getListOfFile(FILE_path); // TODO
+		assertThat(xFiles, is(not((null))));
+	}
 	
 	@Ignore
 	@Test(timeout=2000)
@@ -78,12 +76,16 @@ public class FtpUploaderTest {
 
 		fakeFtpServer.start();
 		int port = fakeFtpServer.getServerControlPort();
+		System.out.println("fake Server port:" + port);
 
 		ftpUploader = new FtpUploader("localhost", port, login, password);
+		ftpUploader.doFtpStart();
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		//System.in.read();
 		fakeFtpServer.stop();
+		ftpUploader.doFtpEnd();
 	}
 }

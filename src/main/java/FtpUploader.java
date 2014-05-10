@@ -7,6 +7,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPListParseEngine;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
@@ -31,7 +32,8 @@ public class FtpUploader {
 		if (ftpClient != null)
 			return;
 
-		ftpClient = new FTPClient();
+	    ftpClient = new FTPClient();
+		
 		try {
 			System.out.println("Подключение...");
 			ftpClient.connect(server, port);
@@ -109,38 +111,28 @@ public class FtpUploader {
 	}
 
 	public FTPFile[] getListOfFile(String folder) throws IOException {
-		FTPClient tempFtpClient = ftpClient;
-		ftpClient = null;
-		connectToFTP();
-
-		ftpClient.setListHiddenFiles(true);
-		showServerReply();
-
-		// побочное действие: меняет текущую директорию
-		/*
-		 * Path p = new Path(folder); p.append(folder); String s =
-		 * p.toPortableString(); System.out.println("Path in getListOfFile(): "
-		 * + s);
-		 */
-		String s = folder;
-
-		FTPFile[] listFtpFile = ftpClient.listFiles(s);
-		System.out.println("Список файлов на FTP в папке " + folder);
-		for (FTPFile ftpFile1 : listFtpFile) {
-			System.out.println("Name - \"" + ftpFile1.getName().toString()
-					+ "\" " + "Size - " + ftpFile1.getSize() + "Link - "
-					+ /*
-					 * ftpFile1.getLink() != null ?
-					 * ftpFile1.getLink().toString() :
-					 */"" + "Type - " + ftpFile1.getType());
+		// Это переключение на отображение ТОЛЬКО скрытых файлов
+		// System.out.println("Запрашиваю скрытые файлы...");
+		// ftpClient.setListHiddenFiles(true);
+		// checkReply();
+		
+		System.out.println("Запрашиваю текущую папку...");
+		System.out.println(ftpClient.printWorkingDirectory());
+		checkReply();
+				
+		// возможно, в зависимости от сервера -- побочное действие: меняет текущую директорию
+		FTPFile[] listFtpFile = ftpClient.listFiles(folder);
+		System.out.println("Начало списка файлов в папке " + folder);
+		for (FTPFile file : listFtpFile) {
+			System.out.println("\"" + file.getName() + "\", " + file.getSize() + " bytes");
 		}
 		System.out.println("Конец списка файлов на FTP в папке " + folder);
-		showServerReply();
-		ftpCloseStub();
-
-		dropConnection();
-		ftpClient = tempFtpClient;
-		System.out.println(ftpClient);
+		checkReply();
+		
+		System.out.println("Запрашиваю текущую папку в конце...");
+		System.out.println(ftpClient.printWorkingDirectory());
+		checkReply();
+		
 		return listFtpFile;
 	}
 
@@ -247,8 +239,14 @@ public class FtpUploader {
 		}
 	}
 
+	/**
+	 * Бросает RuntimeException, если ответ сервера не положиетльный.
+	 * Положительные ответы имеют вид 2xy.
+	 * @throws RuntimeException
+	 */
 	public void checkReply() throws RuntimeException{
 		showServerReply();
+		final String replyStr = ftpClient.getReplyString();
 		int reply = ftpClient.getReplyCode();
 
 		if (!FTPReply.isPositiveCompletion(reply)) {
@@ -258,7 +256,7 @@ public class FtpUploader {
 				e.printStackTrace();
 			}
 			System.err.println("ftpClient server refused connection.");
-			throw new RuntimeException("Негативный ответ сервера");
+			throw new RuntimeException("Негативный ответ сервера: " + replyStr);
 		}
 	}
 	
