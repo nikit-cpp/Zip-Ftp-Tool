@@ -2,8 +2,11 @@ import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.*;
+
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
@@ -34,10 +37,12 @@ public class FtpUploaderTest {
 	private FileSystem fileSystem;
 
 	@Test(timeout=2000)
-	public void testDoFTP() throws IOException {
-		assertThat(ftpUploader.doFtp(), is(false));
+	public void testDoFTPStartEnd() throws IOException {
+		assertThat(ftpUploader.doFtpStart(), is(false));
+		assertThat(ftpUploader.doFtpEnd(), is(false));
 	}
 	
+	@Ignore
 	@Test(timeout=2000)
 	public void testMultipleUploadToFTP() throws IOException {
 		File temp = File.createTempFile(FILE_name, FILE_ext);

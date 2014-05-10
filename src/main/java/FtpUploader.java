@@ -27,44 +27,68 @@ public class FtpUploader {
 		this.pass = pass;
 	}
 
-	public boolean doFtp(){
-	    FTPClient ftp = new FTPClient();
-	    boolean error = false;
-	    try {
-	      int reply;
-	      ftp.connect(server, port);
-	      System.out.println("Connected to " + server + ".");
-	      System.out.print(ftp.getReplyString());
+	public boolean doFtpStart() {
+		if (ftpClient != null)
+			return false;
 
-	      // After connection attempt, you should check the reply code to verify
-	      // success.
-	      reply = ftp.getReplyCode();
+		ftpClient = new FTPClient();
+		boolean error = false;
+		try {
+			int reply;
+			ftpClient.connect(server, port);
+			System.out.println("Connected to " + server + ".");
+			checkReply();
 
-	      if(!FTPReply.isPositiveCompletion(reply)) {
-	        ftp.disconnect();
-	        System.err.println("FTP server refused connection.");
-	        System.exit(1);
-	      }
-	      // TODO transfer files here
-	      System.out.println("Готовность к пидараче файлов");
-	      
-	      System.out.println("Logout");
-	      ftp.logout();
-	    } catch(IOException e) {
-	      error = true;
-	      e.printStackTrace();
-	    } finally {
-	      if(ftp.isConnected()) {
-	        try {
-	          ftp.disconnect();
-	        } catch(IOException ioe) {
-	          // do nothing
-	        }
-	      }
-	    }
-	    return error;
+			// //////////////////////////////////////////
+			// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
+			// enter passive mode before you log in
+			ftpClient.enterLocalPassiveMode();
+			checkReply();
+			
+			ftpClient.login(userName, pass);
+			System.out.println("Подключился? " + ftpClient.isConnected());
+			System.out.println("Доступен? " + ftpClient.isAvailable());
+			// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
+			checkReply();
+
+			ftpClient.setControlEncoding("UTF-8");
+			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+			// //////////////////////////////////////////
+
+			// After connection attempt, you should check the reply code to
+			// verify
+			// success.
+			checkReply();
+			System.out.println("Готовность к пидараче файлов");
+		} catch (IOException e) {
+			error = true;
+			e.printStackTrace();
+		}
+		return error;
 	}
 
+	public boolean doFtpEnd() {
+		boolean error = false;
+		try {
+			System.out.println("Разлогинивание...");
+			ftpClient.logout();
+		} catch (IOException e) {
+			error = true;
+			e.printStackTrace();
+		} finally {
+			if (ftpClient.isConnected()) {
+				try {
+					System.out.println("Отключение...");
+					ftpClient.disconnect();
+				} catch (IOException ioe) {
+					// do nothing
+				}
+			}
+		}
+		return error;
+	}
+
+	@Deprecated
 	public void connectToFTP() throws IOException {
 		if (ftpClient != null)
 			return;
@@ -82,8 +106,8 @@ public class FtpUploader {
 		System.out.println("Подключился? " + ftpClient.isConnected());
 		System.out.println("Доступен? " + ftpClient.isAvailable());
 		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
-		// ftpClient.ent
 		printStatus();
+		showServerReply();
 		// ftpClient.setCharset(Charset.forName("UTF-8"));
 		ftpClient.setControlEncoding("UTF-8");
 		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -228,6 +252,21 @@ public class FtpUploader {
 		}
 	}
 
+	public void checkReply() throws RuntimeException{
+		showServerReply();
+		int reply = ftpClient.getReplyCode();
+
+		if (!FTPReply.isPositiveCompletion(reply)) {
+			try {
+				ftpClient.disconnect();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.err.println("ftpClient server refused connection.");
+			throw new RuntimeException("Негативный ответ сервера");
+		}
+	}
+	
 	// http://stackoverflow.com/questions/15174271/apache-commons-net-ftp-ftpclient-not-uploading-the-file-to-the-required-folder/15179429#15179429
 	private void showServerReply() {
 		String[] replies = ftpClient.getReplyStrings();
