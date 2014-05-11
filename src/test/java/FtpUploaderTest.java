@@ -28,8 +28,12 @@ import java.util.concurrent.CountDownLatch;
  * Здесь интеграционные тесты
  * */
 public class FtpUploaderTest implements Observer {
-	private CountDownLatch updateLatch;
+	private static CountDownLatch updateLatch;
 	
+	public static CountDownLatch getUpdateLatch() {
+		return updateLatch;
+	}
+
 	private static final String HOME_DIR = "/";
 	
 	private static final String FILE_path = "/dir";
@@ -108,6 +112,7 @@ public class FtpUploaderTest implements Observer {
 	}
 
 	public void update(final Observable o, final Object arg) {
+		System.err.println("update()");
 		updateLatch.countDown();
 	}
 }

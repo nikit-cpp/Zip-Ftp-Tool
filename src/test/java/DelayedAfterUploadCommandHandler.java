@@ -9,5 +9,6 @@ public class DelayedAfterUploadCommandHandler extends StorCommandHandler {
 		System.out.println("Привет, я - DelayedAfterUploadCommandHandler, и сейчас я засну на 4 секунды...");
         Thread.sleep(4000);
         System.out.println("проснулся");
+        FtpUploaderTest.getUpdateLatch().countDown();
     }
 }
