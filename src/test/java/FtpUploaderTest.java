@@ -67,6 +67,21 @@ public class FtpUploaderTest implements Observer {
 	
 	@Test(timeout=5000)
 	public void testSingleUploadToFTP() throws Exception {
+		ftpUploader.uploadToFTP(createTempFile(), FILE_path);
+		
+		updateLatch.await(); // Здесь приказываем честно ждать
+	}
+	
+	@Test(timeout=20000) // думаю, если поиграться с клиентскими(FTPClient) таймаутами, то можно будет уменьшить таймаут теста
+	public void testWorkAfterUploadToFTP() throws Exception {	
+		for(int i=0; i<2; i++){
+			ftpUploader.uploadToFTP(createTempFile(), FILE_path+i);
+		}
+		
+		updateLatch.await(); // Здесь приказываем честно ждать
+	}
+	
+	private File createTempFile() throws IOException{
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
 		System.out.println("[ТЕСТ] Создан временный файл "+temp.getAbsolutePath() + " для заливки на сервер\n");
@@ -75,10 +90,8 @@ public class FtpUploaderTest implements Observer {
 		os.flush();
 		os.close();
 		temp.deleteOnExit();
-		
-		ftpUploader.uploadToFTP(temp, FILE_path);
-		
-		updateLatch.await(); // Здесь приказываем честно ждать
+
+		return temp;
 	}
 
 	@Before

@@ -40,8 +40,8 @@ public class FtpUploader extends Observable{
 	}
 
 	public void doFtpStart() {
-		//if (ftpClient != null)
-		//	return;
+		// if (ftpClient != null)
+		// 	return;
 
 		ftpClient = new FTPClient();
 
