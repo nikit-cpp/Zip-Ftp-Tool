@@ -20,7 +20,6 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
-import org.eclipse.core.runtime.Path;
 
 public class FtpUploader extends Observable{
 	private String server;
