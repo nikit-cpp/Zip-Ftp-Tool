@@ -142,9 +142,13 @@ public class FtpUploader extends Observable{
 
 	private FileInputStream fileInputStream;
 	private OutputStream ftpOutStream;
+	private boolean isNeedReconnect=false;
 
 	public boolean uploadToFTP(final File file, String ftpFolder)
 			throws IOException {
+		if(isNeedReconnect)
+			reconnect();
+			
 		changeOrMakeFolder(ftpFolder);
 
 		// Выходим, если файлы существуют на сервере
@@ -180,8 +184,8 @@ public class FtpUploader extends Observable{
             future.get(timeout, TimeUnit.SECONDS);
             System.out.println("Successfully finished!");
         } catch (TimeoutException e) {
-            System.out.println("Время истекло. Переподключение.");
-            reconnect();
+            System.out.println("Время истекло. Переподключение при следующем вызове uploadToFTP().");
+            isNeedReconnect=true;
             
             super.setChanged();
             super.notifyObservers(null);
