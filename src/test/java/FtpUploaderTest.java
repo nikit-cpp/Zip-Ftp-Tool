@@ -122,11 +122,18 @@ public class FtpUploaderTest implements Observer {
 }
 
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
-	protected void afterProcessData(Command command, Session session, InvocationRecord invocationRecord) throws Exception {
+    protected void sendFinalReply(Session session) {
 		System.out.println("Привет, я - DelayedAfterUploadCommandHandler, и сейчас я засну на 4 секунды...");
-        Thread.sleep(4000);
+        try {
+			Thread.sleep(4000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
         System.out.println("проснулся");
         FtpUploaderTest.getUpdateLatch().countDown();
+
+        sendReply(session, finalReplyCode, finalReplyMessageKey, finalReplyText, null);
     }
+
 }
 
