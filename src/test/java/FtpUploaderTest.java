@@ -31,8 +31,8 @@ public class FtpUploaderTest {
 	private static final String FILE_ext = ".txt";
 	private static final String FILE_name_ext = FILE_name + FILE_ext;
 	private static final String FILE_full_name = FILE_path + "/" + FILE_name_ext;
-		
 	private static final String FILE_CONTENTS = "abcdef 1234567890";
+	
 	private static final String login = "login";
 	private static final String password = "password";
 
@@ -51,18 +51,17 @@ public class FtpUploaderTest {
 		assertThat(xFiles[0].getName(), is(FILE_name_ext));
 	}
 	
-	@Ignore
 	@Test(timeout=2000)
-	public void testMultipleUploadToFTP() throws IOException {
+	public void testSingleUploadToFTP() throws IOException {
+		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
-		System.out.println(temp.getAbsolutePath());
-				
+		System.out.println("[ТЕСТ] Создан временный файл "+temp.getAbsolutePath() + " для заливки на сервер\n");
 		OutputStream os = new FileOutputStream(temp);
 		os.write(FILE_CONTENTS.getBytes());
+		os.flush();
 		os.close();
 
-		ftpUploader.uploadToFTP(temp, HOME_DIR);
-		ftpUploader.dropConnection();
+		ftpUploader.uploadToFTP(temp, FILE_path);
 	}
 
 	@Before
@@ -81,7 +80,7 @@ public class FtpUploaderTest {
 
 		fakeFtpServer.start();
 		int port = fakeFtpServer.getServerControlPort();
-		System.out.println("fake Server port:" + port);
+		System.out.println("fake Server port:" + port); // можем зайти на сервер через FileZilla
 
 		ftpUploader = new FtpUploader("localhost", port, login, password);
 		ftpUploader.doFtpStart();
