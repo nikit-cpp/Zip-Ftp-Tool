@@ -122,10 +122,12 @@ public class FtpUploaderTest implements Observer {
 }
 
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
+	private final int SLEEP_TIME = 10;
+	
     protected void sendFinalReply(Session session) {
-		System.out.println("Привет, я - DelayedAfterUploadCommandHandler, и сейчас я засну на 4 секунды...");
+		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");
         try {
-			Thread.sleep(4000);
+			Thread.sleep(SLEEP_TIME*1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
