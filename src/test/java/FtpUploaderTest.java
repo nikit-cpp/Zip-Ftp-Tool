@@ -65,7 +65,7 @@ public class FtpUploaderTest implements Observer {
 		assertThat(xFiles[0].getName(), is(FILE_name_ext));
 	}
 	
-	@Test(timeout=10000)
+	@Test(timeout=5000)
 	public void testSingleUploadToFTP() throws Exception {
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
@@ -125,7 +125,7 @@ public class FtpUploaderTest implements Observer {
 }
 
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
-	private final int SLEEP_TIME = 15;
+	private final int SLEEP_TIME = 10;
 	
     protected void sendFinalReply(Session session) {
 		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");

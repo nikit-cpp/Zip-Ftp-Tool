@@ -180,21 +180,25 @@ public class FtpUploader extends Observable{
             future.get(timeout, TimeUnit.SECONDS);
             System.out.println("Successfully finished!");
         } catch (TimeoutException e) {
-            System.out.println("caused TimeoutException, terminated!");
+            System.out.println("Время истекло. Переподключение.");
+            reconnect();
+            
             super.setChanged();
             super.notifyObservers(null);
         } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-        executor.shutdownNow();
+        executor.shutdownNow(); // TODO почитать. 
 
 		return true;
+	}
 
+	public void reconnect() {
+		doFtpEnd();
+		doFtpStart();
 	}
 
 	public void printStatus() throws IOException {
