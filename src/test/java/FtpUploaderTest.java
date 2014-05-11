@@ -65,7 +65,7 @@ public class FtpUploaderTest implements Observer {
 		assertThat(xFiles[0].getName(), is(FILE_name_ext));
 	}
 	
-	@Test//(timeout=2000)
+	@Test(timeout=1000)
 	public void testSingleUploadToFTP() throws Exception {
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
@@ -74,7 +74,8 @@ public class FtpUploaderTest implements Observer {
 		os.write(FILE_CONTENTS.getBytes());
 		os.flush();
 		os.close();
-
+		temp.deleteOnExit();
+		
 		ftpUploader.uploadToFTP(temp, FILE_path);
 		
 		updateLatch.await(); // Здесь приказываем честно ждать
@@ -110,19 +111,20 @@ public class FtpUploaderTest implements Observer {
 
 	@After
 	public void tearDown() throws Exception {
+		System.out.println("tearDown()");
 		//System.in.read();
 		fakeFtpServer.stop();
 		ftpUploader.doFtpEnd();
 	}
 
 	public void update(final Observable o, final Object arg) {
-		System.err.println("update()");
+		System.out.println("update()");
 		updateLatch.countDown();
 	}
 }
 
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
-	private final int SLEEP_TIME = 10;
+	private final int SLEEP_TIME = 4;
 	
     protected void sendFinalReply(Session session) {
 		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");
