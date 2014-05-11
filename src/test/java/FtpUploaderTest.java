@@ -37,7 +37,7 @@ public class FtpUploaderTest implements Observer {
 	public static CountDownLatch getUpdateLatch() {
 		return updateLatch;
 	}
-
+	private final static int methodDepth = 9;
 	private static final String HOME_DIR = "/";
 	
 	private static final String FILE_path = "/dir";
@@ -57,34 +57,46 @@ public class FtpUploaderTest implements Observer {
 	
 	@Test(timeout=2000)
 	public void testGetListOfFile() throws IOException {
+		printStartTest();
+		
 		FTPFile[] xFiles = ftpUploader.getListOfFile(FILE_path);
 		assertThat(xFiles, is(not(nullValue())));
 		
 		// Утверждаем что у нас 1 файл
 		assertThat(xFiles.length, is(1));
 		assertThat(xFiles[0].getName(), is(FILE_name_ext));
+		
+		printEndTest();
 	}
 	
 	@Test(timeout=5000)
 	public void testSingleUploadToFTP() throws Exception {
+		printStartTest();
+
 		ftpUploader.uploadToFTP(createTempFile(), FILE_path);
 		
 		updateLatch.await(); // Здесь приказываем честно ждать
+		
+		printEndTest();
 	}
 	
 	@Test(timeout=20000) // думаю, если поиграться с клиентскими(FTPClient) таймаутами, то можно будет уменьшить таймаут теста
-	public void testWorkAfterUploadToFTP() throws Exception {	
+	public void testWorkAfterUploadToFTP() throws Exception {
+		printStartTest();
+
 		for(int i=0; i<2; i++){
 			ftpUploader.uploadToFTP(createTempFile(), FILE_path+i);
 		}
 		
 		updateLatch.await(); // Здесь приказываем честно ждать
+		
+		printEndTest();
 	}
 	
 	private File createTempFile() throws IOException{
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
-		System.out.println("[ТЕСТ] Создан временный файл "+temp.getAbsolutePath() + " для заливки на сервер\n");
+		System.out.println("Создан временный файл "+temp.getAbsolutePath() + " для заливки на сервер\n");
 		OutputStream os = new FileOutputStream(temp);
 		os.write(FILE_CONTENTS.getBytes());
 		os.flush();
@@ -134,6 +146,29 @@ public class FtpUploaderTest implements Observer {
 	public void update(final Observable o, final Object arg) {
 		System.out.println("update()");
 		updateLatch.countDown();
+	}
+	
+	/**
+	 * http://stackoverflow.com/questions/442747/getting-the-name-of-the-current-executing-method
+	 * Get the method name for a depth in call stack. <br />
+	 * Utility function
+	 * @param depth depth in the call stack (0 means current method, 1 means call method, ...)
+	 * @return method name
+	 */
+	public static String getMethodName(final int depth)	{
+	  final StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+
+	  //System. out.println(ste[ste.length-depth].getClassName()+"#"+ste[ste.length-depth].getMethodName());
+	  // return ste[ste.length - depth].getMethodName();  //Wrong, fails for depth = 0
+	  return ste[ste.length - 1 - depth].getMethodName(); //Thank you Tom Tresansky
+	}
+	
+	public static void printStartTest(){
+		System.out.println("\n[НАЧАЛО TECTА " + getMethodName(methodDepth) +"() ]");
+	}
+	
+	public static void printEndTest(){
+		System.out.println("[КОНЕЦ TECTА " + getMethodName(methodDepth) + "() ]\n");
 	}
 }
 
