@@ -53,6 +53,8 @@ public class Launcher {
 			ftpUploaders = Config.getInstance().createFtpUploaderArray();
 		
 			for(FtpUploader ftpUploader: ftpUploaders){
+				ftpUploader.doFtpStart();
+				
 				System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
 				for(File zippedFile : lookupFolder.listFiles(fileNameFilter)){
 					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
@@ -61,7 +63,7 @@ public class Launcher {
 					ftpUploader.uploadToFTP(zippedFile, ftpFolder_);
 				}
 					
-				ftpUploader.dropConnection();
+				ftpUploader.doFtpEnd();
 			}
 
 		} catch (ConfigurationException e) {

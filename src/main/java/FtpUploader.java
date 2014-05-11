@@ -85,31 +85,6 @@ public class FtpUploader {
 		}
 	}
 
-	@Deprecated
-	public void connectToFTP() throws IOException {
-		if (ftpClient != null)
-			return;
-
-		ftpClient = new FTPClient();
-
-		ftpClient.connect(server, port);
-
-		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
-		// enter passive mode before you log in
-		ftpClient.enterLocalPassiveMode();
-
-		ftpClient.login(userName, pass);
-
-		System.out.println("Подключился? " + ftpClient.isConnected());
-		System.out.println("Доступен? " + ftpClient.isAvailable());
-		// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
-		printStatus();
-		showServerReply();
-		// ftpClient.setCharset(Charset.forName("UTF-8"));
-		ftpClient.setControlEncoding("UTF-8");
-		ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-	}
-
 	public FTPFile[] getListOfFile(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
@@ -212,19 +187,6 @@ public class FtpUploader {
 
 	public void printStatus() throws IOException {
 		System.out.println("Статус: " + ftpClient.getStatus());
-	}
-
-	public void ftpCloseStub() throws IOException {
-		// ftpClient.logout();
-		// ftpClient.disconnect();
-	}
-
-	public void dropConnection() throws IOException {
-		if (ftpClient == null)
-			return;
-		ftpClient.logout();
-		ftpClient.disconnect();
-		ftpClient = null;
 	}
 
 	private void streamsClose() {
