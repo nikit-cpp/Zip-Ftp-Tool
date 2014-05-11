@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
+import org.mockftpserver.core.command.CommandNames;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
@@ -51,7 +52,7 @@ public class FtpUploaderTest {
 		assertThat(xFiles[0].getName(), is(FILE_name_ext));
 	}
 	
-	@Test(timeout=2000)
+	@Test//(timeout=2000)
 	public void testSingleUploadToFTP() throws IOException {
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
@@ -77,6 +78,10 @@ public class FtpUploaderTest {
 
 		UserAccount userAccount = new UserAccount(login, password, HOME_DIR);
 		fakeFtpServer.addUserAccount(userAccount);
+		
+		// Задаём наш тормознутый обработчик
+		DelayedAfterUploadCommandHandler handler = new DelayedAfterUploadCommandHandler();
+		fakeFtpServer.setCommandHandler(CommandNames.STOR, handler);
 
 		fakeFtpServer.start();
 		int port = fakeFtpServer.getServerControlPort();
