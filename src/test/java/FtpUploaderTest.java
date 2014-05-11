@@ -20,11 +20,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.concurrent.CountDownLatch;
 
 /*
  * Здесь интеграционные тесты
  * */
-public class FtpUploaderTest {
+public class FtpUploaderTest implements Observer {
+	private CountDownLatch updateLatch;
+	
 	private static final String HOME_DIR = "/";
 	
 	private static final String FILE_path = "/dir";
@@ -53,7 +58,7 @@ public class FtpUploaderTest {
 	}
 	
 	@Test//(timeout=2000)
-	public void testSingleUploadToFTP() throws IOException {
+	public void testSingleUploadToFTP() throws Exception {
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
 		System.out.println("[ТЕСТ] Создан временный файл "+temp.getAbsolutePath() + " для заливки на сервер\n");
@@ -63,10 +68,14 @@ public class FtpUploaderTest {
 		os.close();
 
 		ftpUploader.uploadToFTP(temp, FILE_path);
+		
+		updateLatch.await();
 	}
 
 	@Before
 	public void setUp() throws Exception {
+		updateLatch = new CountDownLatch(1);
+		
 		fakeFtpServer = new FakeFtpServer();
 		fakeFtpServer.setServerControlPort(0); // use any free port
 
@@ -96,5 +105,9 @@ public class FtpUploaderTest {
 		//System.in.read();
 		fakeFtpServer.stop();
 		ftpUploader.doFtpEnd();
+	}
+
+	public void update(final Observable o, final Object arg) {
+		updateLatch.countDown();
 	}
 }
