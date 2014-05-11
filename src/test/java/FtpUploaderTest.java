@@ -8,12 +8,16 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
+import org.mockftpserver.core.command.Command;
 import org.mockftpserver.core.command.CommandNames;
+import org.mockftpserver.core.command.InvocationRecord;
+import org.mockftpserver.core.session.Session;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
+import org.mockftpserver.stub.command.StorCommandHandler;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -73,7 +77,7 @@ public class FtpUploaderTest implements Observer {
 
 		ftpUploader.uploadToFTP(temp, FILE_path);
 		
-		updateLatch.await();
+		updateLatch.await(); // Здесь приказываем честно ждать
 	}
 
 	@Before
@@ -116,3 +120,13 @@ public class FtpUploaderTest implements Observer {
 		updateLatch.countDown();
 	}
 }
+
+class DelayedAfterUploadCommandHandler extends StorCommandHandler {
+	protected void afterProcessData(Command command, Session session, InvocationRecord invocationRecord) throws Exception {
+		System.out.println("Привет, я - DelayedAfterUploadCommandHandler, и сейчас я засну на 4 секунды...");
+        Thread.sleep(4000);
+        System.out.println("проснулся");
+        FtpUploaderTest.getUpdateLatch().countDown();
+    }
+}
+

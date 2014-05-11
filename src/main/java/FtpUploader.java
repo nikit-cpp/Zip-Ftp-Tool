@@ -20,6 +20,8 @@ public class FtpUploader {
 	private String userName;
 	private String pass;
 	private FTPClient ftpClient;
+	
+	private MyCopyStreamListener listener = new MyCopyStreamListener();
 
 	public FtpUploader(String server, int port, String userName, String pass) {
 		this.server = server;
@@ -150,18 +152,6 @@ public class FtpUploader {
 
 			System.out.println("Готовность к заливке");
 
-			CopyStreamListener listener = new CopyStreamListener() {
-				public void bytesTransferred(long totalBytesTransferred,
-						int bytesTransferred, long streamSize) {
-					double persent = totalBytesTransferred * 100.0 / streamSize;
-					System.out.printf("\r%-30S: %d / %d байт (%f %%)", "Sent",
-							totalBytesTransferred, streamSize, persent);
-				}
-
-				public void bytesTransferred(CopyStreamEvent event) {
-				}
-			};
-
 			System.out.println("Загрузка началась ...");
 			long c = Util.copyStream(fileInputStream, ftpOutStream,
 					Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
@@ -254,3 +244,15 @@ public class FtpUploader {
 		return server;
 	}
 }
+
+class MyCopyStreamListener implements CopyStreamListener {
+	public void bytesTransferred(long totalBytesTransferred,
+			int bytesTransferred, long streamSize) {
+		double persent = totalBytesTransferred * 100.0 / streamSize;
+		System.out.printf("\r%-30S: %d / %d байт (%f %%)", "Sent",
+				totalBytesTransferred, streamSize, persent);
+	}
+
+	public void bytesTransferred(CopyStreamEvent event) {
+	}
+};
