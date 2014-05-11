@@ -41,8 +41,8 @@ public class FtpUploader extends Observable{
 	}
 
 	public void doFtpStart() {
-		if (ftpClient != null)
-			return;
+		//if (ftpClient != null)
+		//	return;
 
 		ftpClient = new FTPClient();
 
@@ -146,8 +146,10 @@ public class FtpUploader extends Observable{
 
 	public boolean uploadToFTP(final File file, String ftpFolder)
 			throws IOException {
-		if(isNeedReconnect)
+		if(isNeedReconnect){
+			isNeedReconnect=false;
 			reconnect();
+		}
 			
 		changeOrMakeFolder(ftpFolder);
 
@@ -202,6 +204,11 @@ public class FtpUploader extends Observable{
 
 	public void reconnect() {
 		doFtpEnd();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		doFtpStart();
 	}
 
