@@ -32,8 +32,8 @@ public class FtpUploader {
 		if (ftpClient != null)
 			return;
 
-	    ftpClient = new FTPClient();
-		
+		ftpClient = new FTPClient();
+
 		try {
 			System.out.println("Подключение...");
 			ftpClient.connect(server, port);
@@ -46,7 +46,7 @@ public class FtpUploader {
 			System.out.println("Вход в локальный пасивный режим...");
 			ftpClient.enterLocalPassiveMode();
 			checkReply();
-			
+
 			System.out.println("Логин...");
 			ftpClient.login(userName, pass);
 			// http://stackoverflow.com/questions/2712967/apache-commons-net-ftpclient-and-listfiles/5183296#5183296
@@ -115,32 +115,37 @@ public class FtpUploader {
 		// System.out.println("Запрашиваю скрытые файлы...");
 		// ftpClient.setListHiddenFiles(true);
 		// checkReply();
-		
-		System.out.println("Запрос текущей папки: " + ftpClient.printWorkingDirectory());
+
+		System.out.println("Запрос текущей папки: "
+				+ ftpClient.printWorkingDirectory());
 		checkReply();
-				
-		// возможно, в зависимости от сервера -- побочное действие: меняет текущую директорию
+
+		// возможно, в зависимости от сервера -- побочное действие: меняет
+		// текущую директорию
 		FTPFile[] listFtpFile = ftpClient.listFiles(folder);
 		System.out.println("Начало списка файлов в папке " + folder);
 		for (FTPFile file : listFtpFile) {
-			System.out.println("\"" + file.getName() + "\", " + file.getSize() + " bytes");
+			System.out.println("\"" + file.getName() + "\", " + file.getSize()
+					+ " bytes");
 		}
-		System.out.println("Конец списка файлов на FTP в папке " + folder+'\n');
+		System.out.println("Конец списка файлов на FTP в папке " + folder
+				+ '\n');
 		checkReply();
-		
+
 		System.out.println("Запрашиваю текущую папку в конце...");
 		System.out.println(ftpClient.printWorkingDirectory());
 		checkReply();
-		
+
 		return listFtpFile;
 	}
 
 	private final String ROOT_DIR = "/";
-	
+
 	private void changeOrMakeFolder(String ftpFolder) throws IOException {
 		// смена папки
 		// http://stackoverflow.com/questions/4078642/create-a-folder-hierarchy-through-ftp-in-java/4079002#4079002
-		System.out.println("Изменение с возможным созданием директории " + ftpFolder);
+		System.out.println("Изменение с возможным созданием директории "
+				+ ftpFolder);
 		ftpClient.changeWorkingDirectory(ROOT_DIR);
 		if (!ftpFolder.equals(ROOT_DIR))
 			ftpClient.makeDirectory(ftpFolder);
@@ -153,38 +158,43 @@ public class FtpUploader {
 
 	public boolean uploadToFTP(final File file, String ftpFolder)
 			throws IOException {
-		
 		changeOrMakeFolder(ftpFolder);
-		
+
 		// Выходим, если файлы существуют на сервере
 		if (isExists(file, ftpFolder)) {
 			return false;
 		}
-		
-		fileInputStream = new FileInputStream(file);
-		System.out.println("Открытие потока отправки файла...");
-		ftpOutStream = ftpClient.storeFileStream(file.getName());
-		showServerReply();
-		// checkReply(); // Вроде здесь нельзя(150), т. к. после открытия потока сервер ждёт data connection
-		
-		System.out.println("Готовность к заливке");
 
-		CopyStreamListener listener = new CopyStreamListener() {
-			public void bytesTransferred(long totalBytesTransferred,
-					int bytesTransferred, long streamSize) {
-				double persent = totalBytesTransferred * 100.0 / streamSize;
-				System.out.printf("\r%-30S: %d / %d (%f %%)", "Sent",
-						totalBytesTransferred, streamSize, persent);
-			}
-			public void bytesTransferred(CopyStreamEvent event) {}
-		};
+		try {
+			fileInputStream = new FileInputStream(file);
+			System.out.println("Открытие потока отправки файла...");
+			ftpOutStream = ftpClient.storeFileStream(file.getName());
+			showServerReply();
+			// checkReply(); // Вроде здесь нельзя(150), т. к. после открытия
+			// потока сервер ждёт data connection
 
-		System.out.println("Загрузка началась ...");
-		long c = Util.copyStream(fileInputStream, ftpOutStream,
-				Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
-		System.out.printf("\n%-30S: %d\n", "Bytes sent", c);
+			System.out.println("Готовность к заливке");
 
-		streamsClose();
+			CopyStreamListener listener = new CopyStreamListener() {
+				public void bytesTransferred(long totalBytesTransferred,
+						int bytesTransferred, long streamSize) {
+					double persent = totalBytesTransferred * 100.0 / streamSize;
+					System.out.printf("\r%-30S: %d / %d байт (%f %%)", "Sent",
+							totalBytesTransferred, streamSize, persent);
+				}
+
+				public void bytesTransferred(CopyStreamEvent event) {
+				}
+			};
+
+			System.out.println("Загрузка началась ...");
+			long c = Util.copyStream(fileInputStream, ftpOutStream,
+					Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
+			System.out.printf("\n%-30S: %d\n", "Отправлено байт", c);
+		} catch (Exception e) {
+		} finally {
+			streamsClose();
+		}
 
 		// судя по этому
 		// http://mail-archives.apache.org/mod_mbox/commons-user/200412.mbox/%3CBAEAD6E55CF4ED4784B506D39CCD1D4131B89E@tshuscodenmbx02.ERF.THOMSON.COM%3E
@@ -197,6 +207,7 @@ public class FtpUploader {
 
 		checkReply();
 		return true;
+
 	}
 
 	public void printStatus() throws IOException {
@@ -219,19 +230,21 @@ public class FtpUploader {
 	private void streamsClose() {
 		System.out.println("Закрытие потоков...");
 		try {
-			ftpOutStream.close();
-			fileInputStream.close();
+			if (ftpOutStream != null)
+				ftpOutStream.close();
+			if (fileInputStream != null)
+				fileInputStream.close();
 		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
 	/**
 	 * Бросает RuntimeException, если ответ сервера не положиетльный.
 	 * Положительные ответы имеют вид 2xy.
+	 * 
 	 * @throws RuntimeException
 	 */
-	public void checkReply() throws RuntimeException{
+	public void checkReply() throws RuntimeException {
 		showServerReply();
 		final String replyStr = ftpClient.getReplyString();
 		int reply = ftpClient.getReplyCode();
@@ -246,7 +259,7 @@ public class FtpUploader {
 			throw new RuntimeException("Негативный ответ сервера: " + replyStr);
 		}
 	}
-	
+
 	// http://stackoverflow.com/questions/15174271/apache-commons-net-ftp-ftpclient-not-uploading-the-file-to-the-required-folder/15179429#15179429
 	private void showServerReply() {
 		String[] replies = ftpClient.getReplyStrings();
@@ -260,20 +273,22 @@ public class FtpUploader {
 	public boolean isExists(File zippedFile, String ftpfolder)
 			throws IOException {
 		final String localFileName = zippedFile.getName();
-		System.out.println("Проверка наличия файла " + localFileName + " на сервере в "+ ftpfolder);
+		System.out.println("Проверка наличия файла " + localFileName
+				+ " на сервере в " + ftpfolder);
 		FTPFile[] ftpfiles = getListOfFile(ftpfolder);
 		for (FTPFile ftpFile : ftpfiles) {
-			if (ftpFile.isFile() && ftpFile.getName().equals(localFileName))
-			{
-				System.out.println("Файл " + localFileName + " существует на FTP в папке " + ftpfolder);
+			if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) {
+				System.out.println("Файл " + localFileName
+						+ " существует на FTP в папке " + ftpfolder);
 				return true;
 			}
 		}
-		System.out.println("Файл " + localFileName + " не существует на FTP в папке " + ftpfolder);
+		System.out.println("Файл " + localFileName
+				+ " не существует на FTP в папке " + ftpfolder);
 		return false;
 	}
 
-	public String getUrl() {
+	public String getServer() {
 		return server;
 	}
 }

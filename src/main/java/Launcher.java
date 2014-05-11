@@ -6,7 +6,7 @@ import org.apache.commons.configuration.ConfigurationException;
 public class Launcher {
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
-	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "public_html/zaschita informacii"
+	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
 	
 	public static void main(String[] args) throws IOException{
 		System.out.println("HELLO.");
@@ -48,20 +48,20 @@ public class Launcher {
            }
         };
         
-        FtpUploader[] ftpa;
+        FtpUploader[] ftpUploaders;
 		try {
-			ftpa = Config.getInstance().createFtpUploaderArray();
+			ftpUploaders = Config.getInstance().createFtpUploaderArray();
 		
-			for(FtpUploader ftp: ftpa){
-				System.out.println("\nРаботаем с FTP " + ftp.getUrl());
+			for(FtpUploader ftpUploader: ftpUploaders){
+				System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
 				for(File zippedFile : lookupFolder.listFiles(fileNameFilter)){
 					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
 					System.out.println("Полный путь к файлу"+zippedFile.getAbsolutePath());
 					
-					ftp.uploadToFTP(zippedFile, ftpFolder_);
+					ftpUploader.uploadToFTP(zippedFile, ftpFolder_);
 				}
 					
-				ftp.dropConnection();
+				ftpUploader.dropConnection();
 			}
 
 		} catch (ConfigurationException e) {
