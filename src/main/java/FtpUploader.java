@@ -2,6 +2,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Observable;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -14,12 +22,14 @@ import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 import org.eclipse.core.runtime.Path;
 
-public class FtpUploader {
+public class FtpUploader extends Observable{
 	private String server;
 	private int port;
 	private String userName;
 	private String pass;
 	private FTPClient ftpClient;
+	private long timeout = 2;
+
 	
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
 
@@ -161,16 +171,28 @@ public class FtpUploader {
 			streamsClose();
 		}
 
-		// судя по этому
-		// http://mail-archives.apache.org/mod_mbox/commons-user/200412.mbox/%3CBAEAD6E55CF4ED4784B506D39CCD1D4131B89E@tshuscodenmbx02.ERF.THOMSON.COM%3E
-		// в javadoc'е - устаревшая инфа.
-		// я тупо решил проблему, убрав этот оператор
-		System.out.println("completePendingCommand()");
-		if (!ftpClient.completePendingCommand()) {
-			return false;
+		// решение проблемы зависающего сервера
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Boolean> future = executor.submit(new Task(ftpClient, this));
+
+		try {
+            System.out.println("Начато ожидание " + timeout + "с.");
+            future.get(timeout, TimeUnit.SECONDS);
+            System.out.println("Successfully finished!");
+        } catch (TimeoutException e) {
+            System.out.println("caused TimeoutException, terminated!");
+            super.setChanged();
+            super.notifyObservers(null);
+        } catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
-		checkReply();
+        executor.shutdownNow();
+
 		return true;
 
 	}
@@ -207,7 +229,7 @@ public class FtpUploader {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.err.println("Негативный ответ сервера. Отключено.");
+			System.err.println("Негативный ответ сервера.\"" + replyStr + "\" Отключено.");
 			throw new RuntimeException("Негативный ответ сервера: " + replyStr);
 		}
 	}
@@ -255,4 +277,21 @@ class MyCopyStreamListener implements CopyStreamListener {
 
 	public void bytesTransferred(CopyStreamEvent event) {
 	}
-};
+}
+
+class Task implements Callable<Boolean> {
+	private FTPClient ftpClient;
+	private FtpUploader ftpUploader;
+	public Task(FTPClient ftpClient, FtpUploader ftpUploader){
+		this.ftpClient=ftpClient;
+		this.ftpUploader=ftpUploader;
+	}
+    public Boolean call() throws Exception {
+		System.out.println("completePendingCommand()");
+		if (!ftpClient.completePendingCommand()) {
+			return false;
+		}
+		ftpUploader.checkReply();
+		return true;
+    }
+}

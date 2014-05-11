@@ -65,7 +65,7 @@ public class FtpUploaderTest implements Observer {
 		assertThat(xFiles[0].getName(), is(FILE_name_ext));
 	}
 	
-	@Test(timeout=1000)
+	@Test(timeout=10000)
 	public void testSingleUploadToFTP() throws Exception {
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
@@ -106,6 +106,7 @@ public class FtpUploaderTest implements Observer {
 		System.out.println("fake Server port:" + port); // можем зайти на сервер через FileZilla
 
 		ftpUploader = new FtpUploader("localhost", port, login, password);
+		ftpUploader.addObserver(this);
 		ftpUploader.doFtpStart();
 	}
 
@@ -124,7 +125,7 @@ public class FtpUploaderTest implements Observer {
 }
 
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
-	private final int SLEEP_TIME = 4;
+	private final int SLEEP_TIME = 15;
 	
     protected void sendFinalReply(Session session) {
 		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");
@@ -134,7 +135,7 @@ class DelayedAfterUploadCommandHandler extends StorCommandHandler {
 			e.printStackTrace();
 		}
         System.out.println("проснулся");
-        FtpUploaderTest.getUpdateLatch().countDown();
+        FtpUploaderTest.getUpdateLatch().countDown(); // "аварийное" завершение, на случай если у теста нет таймаута
 
         sendReply(session, finalReplyCode, finalReplyMessageKey, finalReplyText, null);
     }
