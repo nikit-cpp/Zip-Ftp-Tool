@@ -28,7 +28,7 @@ public class FtpUploader extends Observable{
 	private String pass;
 	private FTPClient ftpClient;
 	private long timeout = 2;
-
+	public static UploadProgress observerUploadProgress=null;
 	
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
 
@@ -37,11 +37,22 @@ public class FtpUploader extends Observable{
 		this.port = port;
 		this.userName = userName;
 		this.pass = pass;
+		
+		
+		listener.addObserver(observerUploadProgress);
+		this.addObserver(observerUploadProgress);
+		
+//		setChanged();
+//		notifyObservers(server); // уведомляем обсервера о имени сервера
 	}
 
 	public void doFtpStart() {
 		// if (ftpClient != null)
 		// 	return;
+		
+		setChanged();
+		notifyObservers(server); // уведомляем обсервера о имени сервера
+
 
 		ftpClient = new FTPClient();
 
@@ -145,6 +156,12 @@ public class FtpUploader extends Observable{
 
 	public boolean uploadToFTP(final File file, String ftpFolder)
 			throws IOException {
+		setChanged();
+		notifyObservers(file); // уведомляем обсервера о файле
+//		setChanged();
+//		notifyObservers(server); // уведомляем обсервера о имени сервера
+
+
 		if(isNeedReconnect){
 			isNeedReconnect=false;
 			reconnect();
@@ -281,12 +298,15 @@ public class FtpUploader extends Observable{
 	}
 }
 
-class MyCopyStreamListener implements CopyStreamListener {
+class MyCopyStreamListener extends Observable implements CopyStreamListener {
 	public void bytesTransferred(long totalBytesTransferred,
 			int bytesTransferred, long streamSize) {
 		double persent = totalBytesTransferred * 100.0 / streamSize;
 		System.out.printf("\r%-30S: %d / %d байт (%f %%)", "Sent",
 				totalBytesTransferred, streamSize, persent);
+		
+		setChanged();
+		notifyObservers(persent); // autoboxing
 	}
 
 	public void bytesTransferred(CopyStreamEvent event) {
