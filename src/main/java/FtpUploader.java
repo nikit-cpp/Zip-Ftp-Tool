@@ -83,14 +83,14 @@ public class FtpUploader extends Observable{
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
 		} catch (IOException e) {
-			// do nothing
+			e.printStackTrace();
 		} finally {
 			if (ftpClient.isConnected()) {
 				try {
 					System.out.println("Отключение...");
 					ftpClient.disconnect();
 				} catch (IOException ioe) {
-					// do nothing
+					ioe.printStackTrace();
 				}
 			}
 		}

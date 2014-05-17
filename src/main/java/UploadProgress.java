@@ -29,9 +29,8 @@ public class UploadProgress implements Observer {
 					window.frame.setVisible(true);
 					
 					// Создаём поток Launcher, и запускаем его.
-					// Экземпляер window уже создан и мы можем добавлять обсерверы
-					launcher = new Launcher();
-					launcher.observer=window;
+					// Экземпляр window уже создан и мы можем добавлять обсерверы
+					launcher = new Launcher(window);
 					Thread dataLoader = new Thread(launcher);
 			        dataLoader.start();
 				} catch (Exception e) {

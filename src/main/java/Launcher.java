@@ -11,6 +11,13 @@ public class Launcher implements Runnable{
 	
 	public Observer observer;
 	
+	public Launcher(){
+	}
+	
+	public Launcher(Observer observer){
+		this.observer=observer;
+	}
+	
 	public static void main(String[] args) {
 		new Launcher().run();
 	}
