@@ -1,14 +1,21 @@
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
+import java.util.Observer;
+
 import org.apache.commons.configuration.ConfigurationException;
 
-public class Launcher {
+public class Launcher implements Runnable{
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
 	
-	public static void main(String[] args) throws IOException{
+	public Observer observer;
+	
+	public static void main(String[] args) {
+		new Launcher().run();
+	}
+	
+	public void run() {
 		System.out.println("HELLO.");
 		//System.in.read();
 						
@@ -30,35 +37,20 @@ public class Launcher {
 		}
 				
 		// create new filename filter
-        FilenameFilter fileNameFilter = new FilenameFilter() {
-           public boolean accept(File dir, String name) {
-              if(name.lastIndexOf('.')>0){
-                 // get last index for '.' char
-                 int lastIndex = name.lastIndexOf('.');
-                 
-                 // get extension
-                 String str = name.substring(lastIndex);
-                 
-                 // match path name extension
-                 if(str.equals(".zip")){
-                    return true;
-                 }
-              }
-              return false;
-           }
-        };
+        FilenameFilter fileNameFilter = new ZipFilenameFilter();
         
-        FtpUploader[] ftpUploaders;
+        FtpUploader[] ftpUploaders; // для каждого сервера -- свой FtpUploader 
 		try {
 			ftpUploaders = Config.getInstance().createFtpUploaderArray();
-		
+		    propagateObserver(observer, ftpUploaders);
+
 			for(FtpUploader ftpUploader: ftpUploaders){
 				ftpUploader.doFtpStart();
 				
 				System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
 				for(File zippedFile : lookupFolder.listFiles(fileNameFilter)){
 					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
-					System.out.println("Полный путь к файлу"+zippedFile.getAbsolutePath());
+					System.out.println("Полный путь к файлу "+zippedFile.getAbsolutePath());
 					
 					ftpUploader.uploadToFTP(zippedFile, ftpFolder_);
 				}
@@ -70,5 +62,31 @@ public class Launcher {
 			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());
 		}
 	}
+	
+	private void propagateObserver(Observer o, FtpUploader[] ftpUploaders){
+        if(observer!=null)
+        	for(FtpUploader u : ftpUploaders){
+        		u.addObserver(o);
+        		u.getListener().addObserver(o);
+        	}
+	}
+}
+
+class ZipFilenameFilter implements FilenameFilter{
+    public boolean accept(File dir, String name) {
+        if(name.lastIndexOf('.')>0){
+           // get last index for '.' char
+           int lastIndex = name.lastIndexOf('.');
+           
+           // get extension
+           String str = name.substring(lastIndex);
+           
+           // match path name extension
+           if(str.equals(".zip")){
+              return true;
+           }
+        }
+        return false;
+     }
 
 }

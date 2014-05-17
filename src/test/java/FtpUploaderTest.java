@@ -5,12 +5,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import static org.hamcrest.CoreMatchers.*;
-
-import org.mockftpserver.core.command.Command;
 import org.mockftpserver.core.command.CommandNames;
-import org.mockftpserver.core.command.InvocationRecord;
 import org.mockftpserver.core.session.Session;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
@@ -18,12 +14,10 @@ import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
 import org.mockftpserver.stub.command.StorCommandHandler;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.CountDownLatch;

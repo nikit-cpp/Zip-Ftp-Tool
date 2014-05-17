@@ -1,17 +1,7 @@
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
-
-import java.awt.Window.Type;
-
 import javax.swing.JProgressBar;
-
-import java.awt.BorderLayout;
-
-import javax.swing.JLabel;
 import javax.swing.JTextField;
-
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
@@ -26,26 +16,29 @@ public class UploadProgress implements Observer {
 	private JTextField txtFilezip;
 	private JProgressBar progressBar;
 	private static Launcher launcher;
-	
 	/**
 	 * Launch the application.
 	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws IOException {
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
+	public static void main(String[] args) throws IOException {		
+		// Вызывает Runnable в GUI-потоке AWT-EventQueue
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
 				try {
 					UploadProgress window = new UploadProgress();
 					window.frame.setVisible(true);
 					
-					launcher = new Launcher();					
-					launcher.main(null);
-
+					// Создаём поток Launcher, и запускаем его.
+					// Экземпляер window уже создан и мы можем добавлять обсерверы
+					launcher = new Launcher();
+					launcher.observer=window;
+					Thread dataLoader = new Thread(launcher);
+			        dataLoader.start();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-//			}
-//		});
+			}
+		});
 	}
 
 	/**
@@ -53,8 +46,6 @@ public class UploadProgress implements Observer {
 	 */
 	public UploadProgress() {
 		initialize();
-		
-		FtpUploader.observerUploadProgress=this;
 	}
 
 	/**
@@ -63,7 +54,7 @@ public class UploadProgress implements Observer {
 	private void initialize() {
 		frame = new JFrame();
 		frame.setResizable(false);
-		frame.setTitle("Загрузка 146%");
+		frame.setTitle("Загрузка xy%");
 		frame.setBounds(100, 100, 450, 94);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new GridLayout(0, 1, 0, 0));
@@ -85,23 +76,35 @@ public class UploadProgress implements Observer {
 		frame.getContentPane().add(progressBar);
 	}
 
+	// вызваается при измениении ... 
 	public void update(Observable o, Object arg) {
-		if(arg.getClass()==String.class){ // имя сервера
+		if(arg==null)
+			return;
+		
+		if(arg.getClass()==String.class){ // ... имени сервера
 			txtFtpservernet.setText((String)arg);
-			progressBar.setValue(0);
-			frame.setTitle("Загрузка...");
+			resetProgressBar();
 			txtFilezip.setText("");
 		}
-		if(arg.getClass()==File.class){ // файл
+		if(arg.getClass()==File.class){ // ... файла
 			txtFilezip.setText(((File)arg).getAbsolutePath());
-			progressBar.setValue(0);
-			frame.setTitle("Загрузка...");
+			resetProgressBar();
 		}
-		if(arg.getClass()==Double.class){ // процент
+		if(arg.getClass()==Double.class){ // ... процента
 			int proc = ((Double)arg).intValue();
-			progressBar.setValue(proc);
-			frame.setTitle("Загрузка " + proc + "%");
+			setProgressBar(proc);
 		}
 	}
 
+	private void resetProgressBar(){
+		progressBar.setValue(0);
+		frame.setTitle("Загрузка...");
+		progressBar.setString(null);
+	}
+	
+	private void setProgressBar(int value){
+		progressBar.setValue(value);
+		frame.setTitle("Загрузка " + value + "%");
+		progressBar.setString(String.valueOf(value));
+	}
 }

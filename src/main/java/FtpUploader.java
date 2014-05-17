@@ -10,12 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPListParseEngine;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
@@ -28,7 +25,6 @@ public class FtpUploader extends Observable{
 	private String pass;
 	private FTPClient ftpClient;
 	private long timeout = 2;
-	public static UploadProgress observerUploadProgress=null;
 	
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
 
@@ -37,13 +33,6 @@ public class FtpUploader extends Observable{
 		this.port = port;
 		this.userName = userName;
 		this.pass = pass;
-		
-		
-		listener.addObserver(observerUploadProgress);
-		this.addObserver(observerUploadProgress);
-		
-//		setChanged();
-//		notifyObservers(server); // уведомляем обсервера о имени сервера
 	}
 
 	public void doFtpStart() {
@@ -138,24 +127,28 @@ public class FtpUploader extends Observable{
 
 	private final String ROOT_DIR = "/";
 
-	private void changeOrMakeFolder(String ftpFolder) throws IOException {
+	private void changeOrMakeFolder(String ftpFolder) {
 		// смена папки
 		// http://stackoverflow.com/questions/4078642/create-a-folder-hierarchy-through-ftp-in-java/4079002#4079002
 		System.out.println("Изменение с возможным созданием директории "
 				+ ftpFolder);
-		ftpClient.changeWorkingDirectory(ROOT_DIR);
-		if (!ftpFolder.equals(ROOT_DIR))
-			ftpClient.makeDirectory(ftpFolder);
-		ftpClient.changeWorkingDirectory(ftpFolder);
-		checkReply();
+		
+		try{
+			ftpClient.changeWorkingDirectory(ROOT_DIR);
+			if (!ftpFolder.equals(ROOT_DIR))
+				ftpClient.makeDirectory(ftpFolder);
+			ftpClient.changeWorkingDirectory(ftpFolder);
+			checkReply();
+		}catch(Exception e){
+			System.err.println("Ошибка при изменении или создании директории на сервере");
+		}
 	}
 
 	private FileInputStream fileInputStream;
 	private OutputStream ftpOutStream;
 	private boolean isNeedReconnect=false;
 
-	public boolean uploadToFTP(final File file, String ftpFolder)
-			throws IOException {
+	public boolean uploadToFTP(final File file, String ftpFolder) {
 		setChanged();
 		notifyObservers(file); // уведомляем обсервера о файле
 //		setChanged();
@@ -189,6 +182,7 @@ public class FtpUploader extends Observable{
 					Util.DEFAULT_COPY_BUFFER_SIZE, file.length(), listener);
 			System.out.printf("\n%-30S: %d\n", "Отправлено байт", c);
 		} catch (Exception e) {
+			e.printStackTrace();
 		} finally {
 			streamsClose();
 		}
@@ -275,26 +269,34 @@ public class FtpUploader extends Observable{
 		}
 	}
 
-	public boolean isExists(File zippedFile, String ftpfolder)
-			throws IOException {
+	public boolean isExists(File zippedFile, String ftpfolder) {
 		final String localFileName = zippedFile.getName();
 		System.out.println("Проверка наличия файла " + localFileName
 				+ " на сервере в " + ftpfolder);
-		FTPFile[] ftpfiles = getListOfFile(ftpfolder);
-		for (FTPFile ftpFile : ftpfiles) {
-			if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) {
-				System.out.println("Файл " + localFileName
-						+ " существует на FTP в папке " + ftpfolder);
-				return true;
+		try{
+			FTPFile[] ftpfiles = getListOfFile(ftpfolder); // получаем имеющиеся файлы
+			for (FTPFile ftpFile : ftpfiles) {
+				if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) { // ищем среди них нужный нам файл по имени
+					System.out.println("Файл " + localFileName
+							+ " существует на FTP в папке " + ftpfolder);
+					return true;
+				}
 			}
+			System.out.println("Файл " + localFileName
+					+ " не существует на FTP в папке " + ftpfolder);
+			
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		System.out.println("Файл " + localFileName
-				+ " не существует на FTP в папке " + ftpfolder);
 		return false;
 	}
 
 	public String getServer() {
 		return server;
+	}
+	
+	public MyCopyStreamListener getListener(){
+		return listener;
 	}
 }
 

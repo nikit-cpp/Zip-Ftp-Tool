@@ -8,7 +8,7 @@ import java.util.zip.ZipOutputStream;
 
 public class Zipper {
 	// http://www.quizful.net/post/java-zip-archiving
-	public void zip(File zippableFolder, String destFolder) throws IOException {
+	public void zip(File zippableFolder, String destFolder) {
 		System.out.println("\nzip(): пакуем " + zippableFolder + "; в "+destFolder);
 		final String filename = destFolder+"\\"+zippableFolder.getName()+".zip";
 		System.out.println("Имя файла zip-архива: " + filename);
@@ -17,26 +17,35 @@ public class Zipper {
 			return;
 		}
 		
-        FileOutputStream fout = new FileOutputStream(filename);
-        ZipOutputStream zout = new ZipOutputStream(fout);
-        byte[] buf = new byte[1024]; 
-        
-        for(File zippableFile : zippableFolder.listFiles()){
-        	if(zippableFile.isDirectory()) continue;
-        	System.out.println("Файл для архивирования: " + zippableFile);
-            ZipEntry ze = new ZipEntry(zippableFile.getName());//Имя файла - имя файла в архиве
-            zout.putNextEntry(ze);
-            //отправка данных в поток zout
-            FileInputStream in = new FileInputStream(zippableFile); 
-            int len; 
-            while ((len = in.read(buf)) > 0) { 
-             zout.write(buf, 0, len); 
-            } 
-            zout.closeEntry();
-            in.close();
-        }
-        zout.close();
-        System.out.println("zip() END\n");
+		ZipOutputStream zout=null;
+		try{
+	        zout = new ZipOutputStream(new FileOutputStream(filename));
+	        byte[] buf = new byte[1024]; 
+	        
+	        for(File zippableFile : zippableFolder.listFiles()){
+	        	if(zippableFile.isDirectory()) continue;
+	        	System.out.println("Файл для архивирования: " + zippableFile);
+	            ZipEntry ze = new ZipEntry(zippableFile.getName());//Имя файла - имя файла в архиве
+	            zout.putNextEntry(ze);
+	            //отправка данных в поток zout
+	            FileInputStream in = new FileInputStream(zippableFile); 
+	            int len; 
+	            while ((len = in.read(buf)) > 0) { 
+	             zout.write(buf, 0, len); 
+	            } 
+	            zout.closeEntry();
+	            in.close();
+	        }
+	        System.out.println("zip() END\n");
+		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			try {
+				zout.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
