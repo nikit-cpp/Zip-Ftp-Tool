@@ -1,10 +1,13 @@
 import java.awt.EventQueue;
+
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -27,6 +30,9 @@ public class UploadProgress implements Observer {
 				try {
 					UploadProgress window = new UploadProgress();
 					window.frame.setVisible(true);
+					
+			        Proxy.newProxyInstance(getClass().getClassLoader(), new Class[]{Observer.class}, new EDTInvocationHandler(window));
+
 					
 					// Создаём поток Launcher, и запускаем его.
 					// Экземпляр window уже создан и мы можем добавлять обсерверы
@@ -76,6 +82,7 @@ public class UploadProgress implements Observer {
 	}
 
 	// вызваается при измениении ... 
+	@RequireGUIThread
 	public void update(Observable o, Object arg) {
 		if(arg==null)
 			return;

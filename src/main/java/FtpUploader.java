@@ -18,7 +18,7 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 
-public class FtpUploader extends Observable{
+public class FtpUploader extends Observable implements FTPWorker{
 	private String server;
 	private int port;
 	private String userName;
@@ -35,6 +35,9 @@ public class FtpUploader extends Observable{
 		this.pass = pass;
 	}
 
+	/* (non-Javadoc)
+	 * @see FTPWorker#doFtpStart()
+	 */
 	public void doFtpStart() {
 		// if (ftpClient != null)
 		// 	return;
@@ -78,6 +81,9 @@ public class FtpUploader extends Observable{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see FTPWorker#doFtpEnd()
+	 */
 	public void doFtpEnd() {
 		try {
 			System.out.println("Разлогинивание...");
@@ -96,6 +102,9 @@ public class FtpUploader extends Observable{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see FTPWorker#getListOfFile(java.lang.String)
+	 */
 	public FTPFile[] getListOfFile(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
@@ -148,6 +157,9 @@ public class FtpUploader extends Observable{
 	private OutputStream ftpOutStream;
 	private boolean isNeedReconnect=false;
 
+	/* (non-Javadoc)
+	 * @see FTPWorker#uploadToFTP(java.io.File, java.lang.String)
+	 */
 	public boolean uploadToFTP(final File file, String ftpFolder) {
 		setChanged();
 		notifyObservers(file); // уведомляем обсервера о файле
@@ -269,6 +281,9 @@ public class FtpUploader extends Observable{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see FTPWorker#isExists(java.io.File, java.lang.String)
+	 */
 	public boolean isExists(File zippedFile, String ftpfolder) {
 		final String localFileName = zippedFile.getName();
 		System.out.println("Проверка наличия файла " + localFileName
