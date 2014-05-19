@@ -1,3 +1,6 @@
+// http://www.skipy.ru/technics/synchronization.html
+// http://www.skipy.ru/technics/gui_sync.html#uicallback
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
