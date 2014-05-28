@@ -26,6 +26,24 @@ public class FtpUploader extends Observable{
 	private FTPClient ftpClient;
 	private long timeout = 2;
 	
+	/**
+	 * Принудительно завершающаяся по таймауту задача.
+	 * Сделано для предотвращения зависания программы при ожидании ответа сервера.
+	 * @author Ник
+	 *
+	 */
+	private class Task implements Callable<Boolean> {
+		public Task(){}
+	    public Boolean call() throws Exception {
+			System.out.println("completePendingCommand()");
+			if (!ftpClient.completePendingCommand()) {
+				return false;
+			}
+			checkReply();
+			return true;
+	    }
+	}
+	
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
 
 	public FtpUploader(String server, int port, String userName, String pass) {
@@ -189,7 +207,7 @@ public class FtpUploader extends Observable{
 
 		// решение проблемы зависающего сервера
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Boolean> future = executor.submit(new Task(ftpClient, this));
+        Future<Boolean> future = executor.submit(new Task());
 
 		try {
             System.out.println("Начато ожидание " + timeout + "с.");
@@ -298,7 +316,7 @@ public class FtpUploader extends Observable{
 	public MyCopyStreamListener getListener(){
 		return listener;
 	}
-}
+} // FtpUploader
 
 class MyCopyStreamListener extends Observable implements CopyStreamListener {
 	public void bytesTransferred(long totalBytesTransferred,
@@ -313,21 +331,4 @@ class MyCopyStreamListener extends Observable implements CopyStreamListener {
 
 	public void bytesTransferred(CopyStreamEvent event) {
 	}
-}
-
-class Task implements Callable<Boolean> {
-	private FTPClient ftpClient;
-	private FtpUploader ftpUploader;
-	public Task(FTPClient ftpClient, FtpUploader ftpUploader){
-		this.ftpClient=ftpClient;
-		this.ftpUploader=ftpUploader;
-	}
-    public Boolean call() throws Exception {
-		System.out.println("completePendingCommand()");
-		if (!ftpClient.completePendingCommand()) {
-			return false;
-		}
-		ftpUploader.checkReply();
-		return true;
-    }
 }
