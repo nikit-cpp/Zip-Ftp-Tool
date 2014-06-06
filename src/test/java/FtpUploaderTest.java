@@ -192,7 +192,7 @@ class DelayedAfterUploadCommandHandler extends StorCommandHandler {
 			//e.printStackTrace();
 		}
         System.out.println("проснулся");
-        FtpUploaderTest.getUpdateLatch().countDown(); // "аварийное" завершение, на случай если у теста нет таймаута
+        //FtpUploaderTest.getUpdateLatch().countDown(); // "аварийное" завершение, на случай если у теста нет таймаута
 
         sendReply(session, finalReplyCode, finalReplyMessageKey, finalReplyText, null);
     }
