@@ -1,3 +1,4 @@
+package uploader;
 import java.io.File;
 import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;

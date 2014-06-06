@@ -5,7 +5,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.*;
+
 import org.mockftpserver.core.command.CommandNames;
 import org.mockftpserver.core.session.Session;
 import org.mockftpserver.fake.filesystem.FileEntry;
@@ -14,6 +16,9 @@ import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
 import org.mockftpserver.stub.command.StorCommandHandler;
+
+import uploader.FtpUploader;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
