@@ -1,10 +1,13 @@
-package uploader;
+package main;
 import java.io.File;
 import java.util.List;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+
+import uploader.FtpUploader;
 
 
 public class Config {

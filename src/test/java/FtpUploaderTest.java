@@ -131,7 +131,7 @@ public class FtpUploaderTest implements Observer {
 
 		ftpUploader = new FtpUploader("localhost", port, login, password);
 		ftpUploader.addObserver(this);
-		ftpUploader.doFtpStart();
+		ftpUploader.doStart();
 	}
 
 	@After
@@ -139,7 +139,7 @@ public class FtpUploaderTest implements Observer {
 		System.out.println("tearDown()");
 		//System.in.read();
 		fakeFtpServer.stop();
-		ftpUploader.doFtpEnd();
+		ftpUploader.doEnd();
 	}
 
 	public void update(final Observable o, final Object arg) {

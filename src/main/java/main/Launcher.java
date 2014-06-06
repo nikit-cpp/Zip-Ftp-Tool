@@ -1,16 +1,18 @@
-package uploader;
+package main;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Observer;
 
 import org.apache.commons.configuration.ConfigurationException;
 
+import uploader.Uploadable;
+
 public class Launcher implements Runnable{
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
 	
-	public Observer observer;
+	private Observer observer;
 	
 	public Launcher(){
 	}
@@ -47,13 +49,13 @@ public class Launcher implements Runnable{
 		// create new filename filter
         FilenameFilter fileNameFilter = new ZipFilenameFilter();
         
-        FtpUploader[] ftpUploaders; // для каждого сервера -- свой FtpUploader 
+        Uploadable[] ftpUploaders; // для каждого сервера -- свой Uploadable 
 		try {
 			ftpUploaders = Config.getInstance().createFtpUploaderArray();
 		    propagateObserver(observer, ftpUploaders);
 
-			for(FtpUploader ftpUploader: ftpUploaders){
-				ftpUploader.doFtpStart();
+			for(Uploadable ftpUploader: ftpUploaders){
+				ftpUploader.doStart();
 				
 				System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
 				for(File zippedFile : lookupFolder.listFiles(fileNameFilter)){
@@ -63,7 +65,7 @@ public class Launcher implements Runnable{
 					ftpUploader.uploadToFTP(zippedFile, ftpFolder_);
 				}
 					
-				ftpUploader.doFtpEnd();
+				ftpUploader.doEnd();
 			}
 
 		} catch (ConfigurationException e) {
@@ -71,11 +73,10 @@ public class Launcher implements Runnable{
 		}
 	}
 	
-	private void propagateObserver(Observer o, FtpUploader[] ftpUploaders){
+	private void propagateObserver(Observer o, Uploadable[] ftpUploaders){
         if(observer!=null)
-        	for(FtpUploader u : ftpUploaders){
+        	for(Uploadable u : ftpUploaders){
         		u.addObserver(o);
-        		u.getListener().addObserver(o);
         	}
 	}
 }
@@ -96,5 +97,4 @@ class ZipFilenameFilter implements FilenameFilter{
         }
         return false;
      }
-
 }

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -19,7 +21,7 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 
-public class FtpUploader extends Observable{
+public class FtpUploader extends Observable implements Uploadable{
 	private String server;
 	private int port;
 	private String userName;
@@ -54,7 +56,10 @@ public class FtpUploader extends Observable{
 		this.pass = pass;
 	}
 
-	public void doFtpStart() {
+	/* (non-Javadoc)
+	 * @see uploader.Uploadable#doFtpStart()
+	 */
+	public void doStart() {
 		// if (ftpClient != null)
 		// 	return;
 		
@@ -97,7 +102,10 @@ public class FtpUploader extends Observable{
 		}
 	}
 
-	public void doFtpEnd() {
+	/* (non-Javadoc)
+	 * @see uploader.Uploadable#doFtpEnd()
+	 */
+	public void doEnd() {
 		try {
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
@@ -167,6 +175,9 @@ public class FtpUploader extends Observable{
 	private OutputStream ftpOutStream;
 	private boolean isNeedReconnect=false;
 
+	/* (non-Javadoc)
+	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
+	 */
 	public boolean uploadToFTP(final File file, String ftpFolder) {
 		setChanged();
 		notifyObservers(file); // уведомляем обсервера о файле
@@ -232,13 +243,13 @@ public class FtpUploader extends Observable{
 	}
 
 	public void reconnect() {
-		doFtpEnd();
+		doEnd();
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		doFtpStart();
+		doStart();
 	}
 
 	public void printStatus() throws IOException {
@@ -313,9 +324,10 @@ public class FtpUploader extends Observable{
 	public String getServer() {
 		return server;
 	}
-	
-	public MyCopyStreamListener getListener(){
-		return listener;
+		
+	public void addObserver(Observer o){
+		super.addObserver(o);
+		listener.addObserver(o);
 	}
 } // FtpUploader
 
