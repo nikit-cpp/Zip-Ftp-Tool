@@ -21,21 +21,23 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 
+import timeout.annotation.Timeout;
+
 public class FtpUploader extends Observable implements Uploadable{
 	private String server;
 	private int port;
 	private String userName;
 	private String pass;
 	private FTPClient ftpClient;
-	private long timeout = 2;
-	
+	private final int timeout = 2;
+		
 	/**
 	 * Принудительно завершающаяся по таймауту задача.
 	 * Сделано для предотвращения зависания программы при ожидании ответа сервера.
 	 * @author Ник
 	 *
 	 */
-	private class Task implements Callable<Boolean> {
+/*	private class Task implements Callable<Boolean> {
 		public Task(){}
 	    public Boolean call() throws Exception {
 			System.out.println("completePendingCommand()");
@@ -46,7 +48,7 @@ public class FtpUploader extends Observable implements Uploadable{
 			return true;
 	    }
 	}
-	
+*/	
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
 
 	public FtpUploader(String server, int port, String userName, String pass) {
@@ -105,19 +107,20 @@ public class FtpUploader extends Observable implements Uploadable{
 	/* (non-Javadoc)
 	 * @see uploader.Uploadable#doFtpEnd()
 	 */
+	@Timeout(timeout)
 	public void doEnd() {
 		try {
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} finally {
 			if (ftpClient.isConnected()) {
 				try {
 					System.out.println("Отключение...");
 					ftpClient.disconnect();
 				} catch (IOException ioe) {
-					ioe.printStackTrace();
+					//ioe.printStackTrace();
 				}
 			}
 		}
@@ -217,7 +220,8 @@ public class FtpUploader extends Observable implements Uploadable{
 			streamsClose();
 		}
 
-		// решение проблемы зависающего сервера
+		
+/*		// решение проблемы зависающего сервера
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<Boolean> future = executor.submit(new Task());
 
@@ -237,9 +241,28 @@ public class FtpUploader extends Observable implements Uploadable{
 			e.printStackTrace();
 		}
 
-        executor.shutdownNow(); // TODO почитать. 
-
+        executor.shutdownNow();
+*/        
+        try{
+        	checkCompleted();
+        }catch(IOException e){
+        	isNeedReconnect=true;
+            super.setChanged();
+            super.notifyObservers(null);
+        }
+        
+		
 		return true;
+	}
+	
+	@Timeout(timeout)
+	public void checkCompleted() throws IOException{
+		System.out.println("completePendingCommand()");
+			if (!ftpClient.completePendingCommand()) {
+				throw new IOException("not completed pending.");
+			}
+		checkReply();
+		return;
 	}
 
 	public void reconnect() {

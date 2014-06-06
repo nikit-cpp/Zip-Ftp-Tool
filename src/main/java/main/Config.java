@@ -8,6 +8,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import timeout.annotation.processor.TimeoutProxy;
+import uploader.Fabric;
 import uploader.FtpUploader;
 import uploader.Uploadable;
 
@@ -66,7 +67,7 @@ public class Config {
 		// получить количество_серверов
 		int size = xmlConfig.getList("servers.server.url").size();
 		//создать массив/аррэйлист
-		Uploadable[] ftpa = new FtpUploader[size];
+		Uploadable[] ftpa = new Uploadable[size];
 		
 		List<HierarchicalConfiguration> servers = 
 			    xmlConfig.configurationsAt("servers.server");
@@ -121,11 +122,3 @@ public class Config {
 	}
 }
 
-class Fabric {	
-	public static Uploadable createFtpUploader(String server, int port, String userName, String pass){
-		Uploadable instance = (Uploadable) TimeoutProxy.getNewProxy(
-				new FtpUploader(server, port, userName, pass), Uploadable.class); // собственно на этой строчке инстанцируется экземпляр.
-
-		return instance;
-	}
-}

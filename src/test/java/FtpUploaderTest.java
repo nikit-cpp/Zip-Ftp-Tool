@@ -1,4 +1,5 @@
 import static org.junit.Assert.*;
+import main.Config;
 
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
@@ -8,16 +9,21 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
+import org.mockftpserver.core.command.Command;
 import org.mockftpserver.core.command.CommandNames;
+import org.mockftpserver.core.command.InvocationRecord;
 import org.mockftpserver.core.session.Session;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
+import org.mockftpserver.stub.command.QuitCommandHandler;
 import org.mockftpserver.stub.command.StorCommandHandler;
 
+import uploader.Fabric;
 import uploader.FtpUploader;
+import uploader.Uploadable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,7 +55,7 @@ public class FtpUploaderTest implements Observer {
 	private static final String login = "login";
 	private static final String password = "password";
 
-	private FtpUploader ftpUploader;
+	private Uploadable ftpUploader;
 	private FakeFtpServer fakeFtpServer;
 
 	private FileSystem fileSystem;
@@ -91,7 +97,7 @@ public class FtpUploaderTest implements Observer {
 		
 		printEndTest();
 	}
-	
+		
 	private File createTempFile() throws IOException{
 		// Запись файла в ФС
 		File temp = File.createTempFile(FILE_name, FILE_ext);
@@ -124,12 +130,13 @@ public class FtpUploaderTest implements Observer {
 		// Задаём наш тормознутый обработчик
 		DelayedAfterUploadCommandHandler handler = new DelayedAfterUploadCommandHandler();
 		fakeFtpServer.setCommandHandler(CommandNames.STOR, handler);
-
+		
 		fakeFtpServer.start();
+		
 		int port = fakeFtpServer.getServerControlPort();
 		System.out.println("fake Server port:" + port); // можем зайти на сервер через FileZilla
 
-		ftpUploader = new FtpUploader("localhost", port, login, password);
+		ftpUploader = Fabric.createFtpUploader("localhost", port, login, password);
 		ftpUploader.addObserver(this);
 		ftpUploader.doStart();
 	}
@@ -143,8 +150,10 @@ public class FtpUploaderTest implements Observer {
 	}
 
 	public void update(final Observable o, final Object arg) {
-		System.out.println("update()");
-		updateLatch.countDown();
+		if (arg==null){
+			System.out.println("update()");
+			updateLatch.countDown();
+		}
 	}
 	
 	/**
@@ -172,14 +181,15 @@ public class FtpUploaderTest implements Observer {
 }
 
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
-	private final int SLEEP_TIME = 10;
+	private final int SLEEP_TIME = 100;
 	
     protected void sendFinalReply(Session session) {
 		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");
         try {
 			Thread.sleep(SLEEP_TIME*1000);
+        	//wait();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
         System.out.println("проснулся");
         FtpUploaderTest.getUpdateLatch().countDown(); // "аварийное" завершение, на случай если у теста нет таймаута
@@ -188,4 +198,3 @@ class DelayedAfterUploadCommandHandler extends StorCommandHandler {
     }
 
 }
-
