@@ -7,7 +7,9 @@ import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 
+import timeout.annotation.processor.TimeoutProxy;
 import uploader.FtpUploader;
+import uploader.Uploadable;
 
 
 public class Config {
@@ -60,11 +62,11 @@ public class Config {
 		return value;
 	}
 	
-	public FtpUploader[] createFtpUploaderArray() throws ConfigurationException {
+	public Uploadable[] createFtpUploaderArray() throws ConfigurationException {
 		// получить количество_серверов
 		int size = xmlConfig.getList("servers.server.url").size();
 		//создать массив/аррэйлист
-		FtpUploader[] ftpa = new FtpUploader[size];
+		Uploadable[] ftpa = new FtpUploader[size];
 		
 		List<HierarchicalConfiguration> servers = 
 			    xmlConfig.configurationsAt("servers.server");
@@ -80,7 +82,7 @@ public class Config {
 				
 				System.out.println("loaded url: "+url + " port: " + port + " login: "+ login);
 				
-			    ftpa[i++] = new FtpUploader(url, port, login, password);
+			    ftpa[i++] = Fabric.createFtpUploader(url, port, login, password);
 			}catch(ConversionException e){
 				String msg0 = e.getMessages()[0];
 				String msg1 = e.getMessages()[1];
@@ -116,5 +118,14 @@ public class Config {
 		xmlConfig.addProperty("servers.server(1).password", "pass2");
 
 		xmlConfig.save();
+	}
+}
+
+class Fabric {	
+	public static Uploadable createFtpUploader(String server, int port, String userName, String pass){
+		Uploadable instance = (Uploadable) TimeoutProxy.getNewProxy(
+				new FtpUploader(server, port, userName, pass), Uploadable.class); // собственно на этой строчке инстанцируется экземпляр.
+
+		return instance;
 	}
 }
