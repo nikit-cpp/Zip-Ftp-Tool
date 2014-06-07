@@ -143,8 +143,10 @@ public class FtpUploaderTest implements Observer {
 	}
 
 	public void update(final Observable o, final Object arg) {
-		System.out.println("update()");
-		updateLatch.countDown();
+		if(arg==null){
+			System.out.println("update()");
+			updateLatch.countDown();
+		}
 	}
 	
 	/**
