@@ -74,7 +74,7 @@ public class FtpUploaderTest implements Observer {
 		printEndTest();
 	}
 	
-	@Test(timeout=5000)
+	@Test//(timeout=5000)
 	public void testSingleUploadToFTP() throws Exception {
 		printStartTest();
 
