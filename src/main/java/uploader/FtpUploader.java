@@ -243,26 +243,28 @@ public class FtpUploader extends Observable implements Uploadable{
 
         executor.shutdownNow();
 */        
-        try{
-        	checkCompleted();
-        }catch(IOException e){
-        	isNeedReconnect=true;
-            super.setChanged();
-            super.notifyObservers(null);
-        }
-        
 		
 		return true;
 	}
 	
 	@Timeout(timeout)
-	public void checkCompleted() throws IOException{
+	public void checkCompleted(){
 		System.out.println("completePendingCommand()");
+		boolean ok=true;
+		try {
 			if (!ftpClient.completePendingCommand()) {
-				throw new IOException("not completed pending.");
+				ok=false;
 			}
-		checkReply();
-		return;
+			checkReply();
+		} catch (IOException e) {
+			ok=false;
+		}
+		if(!ok){
+			System.out.println("not OK in completePendingCommand()!");
+			isNeedReconnect=true;
+            super.setChanged();
+            super.notifyObservers(null);
+		}
 	}
 
 	public void reconnect() {

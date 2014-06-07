@@ -20,7 +20,7 @@ public interface Uploadable {
 	
 	public abstract void addObserver(Observer o);
 
-	public void checkCompleted() throws IOException;
+	public void checkCompleted();
 
 	public abstract FTPFile[] getListOfFile(String filePath) throws IOException;
 }

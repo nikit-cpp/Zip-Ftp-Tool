@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
 
 /*
  * Здесь интеграционные тесты
@@ -79,6 +80,7 @@ public class FtpUploaderTest implements Observer {
 		printStartTest();
 
 		ftpUploader.uploadToFTP(createTempFile(), FILE_path);
+		ftpUploader.checkCompleted();
 		
 		updateLatch.await(); // Здесь приказываем честно ждать
 		

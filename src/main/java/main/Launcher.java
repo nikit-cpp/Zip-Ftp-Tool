@@ -63,6 +63,7 @@ public class Launcher implements Runnable{
 					System.out.println("Полный путь к файлу "+zippedFile.getAbsolutePath());
 					
 					ftpUploader.uploadToFTP(zippedFile, ftpFolder_);
+					ftpUploader.checkCompleted();
 				}
 					
 				ftpUploader.doEnd();
