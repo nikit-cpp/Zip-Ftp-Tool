@@ -1,49 +1,30 @@
 import static org.junit.Assert.*;
-import main.Config;
-
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import static org.hamcrest.CoreMatchers.*;
-
-import org.mockftpserver.core.command.Command;
 import org.mockftpserver.core.command.CommandNames;
-import org.mockftpserver.core.command.InvocationRecord;
 import org.mockftpserver.core.session.Session;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
-import org.mockftpserver.stub.command.QuitCommandHandler;
 import org.mockftpserver.stub.command.StorCommandHandler;
-
 import timeout.annotation.processor.TimeoutInvocationHandler;
 import uploader.Fabric;
-import uploader.FtpUploader;
 import uploader.Uploadable;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeoutException;
 
 /*
  * Здесь интеграционные тесты
  * */
-public class FtpUploaderTest implements Observer {
-	private static CountDownLatch updateLatch;
-	
-	public static CountDownLatch getUpdateLatch() {
-		return updateLatch;
-	}
+public class FtpUploaderTest  {
 	private final static int methodDepth = 9;
 	private static final String HOME_DIR = "/";
 	
@@ -76,18 +57,14 @@ public class FtpUploaderTest implements Observer {
 		printEndTest();
 	}
 	
-	@Test//(timeout=5000)
+	@Test(timeout=5000)
 	public void testSingleUploadToFTP() throws Exception {
 		printStartTest();
 
 		ftpUploader.uploadToFTP(createTempFile(), FILE_path);
-		ftpUploader.checkCompleted();
 		
 		if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
 		TimeoutInvocationHandler.timeoutElapsed=false;
-		update(null, null);
-		
-		updateLatch.await(); // Здесь приказываем честно ждать
 		
 		printEndTest();
 	}
@@ -101,13 +78,7 @@ public class FtpUploaderTest implements Observer {
 			ftpUploader.checkCompleted();
 
 			if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
-			TimeoutInvocationHandler.timeoutElapsed=false;
-			ftpUploader.doEnd();
-			ftpUploader.doStart();
 		}
-		update(null, null);
-		
-		updateLatch.await(); // Здесь приказываем честно ждать
 		
 		printEndTest();
 	}
@@ -126,9 +97,7 @@ public class FtpUploaderTest implements Observer {
 	}
 
 	@Before
-	public void setUp() throws Exception {
-		updateLatch = new CountDownLatch(1);
-		
+	public void setUp() throws Exception {	
 		fakeFtpServer = new FakeFtpServer();
 		fakeFtpServer.setServerControlPort(0); // use any free port
 
@@ -151,7 +120,7 @@ public class FtpUploaderTest implements Observer {
 		System.out.println("fake Server port:" + port); // можем зайти на сервер через FileZilla
 
 		ftpUploader = Fabric.createFtpUploader("localhost", port, login, password);
-		ftpUploader.addObserver(this);
+		//ftpUploader.addObserver(this);
 		ftpUploader.doStart();
 	}
 
@@ -163,12 +132,12 @@ public class FtpUploaderTest implements Observer {
 		ftpUploader.doEnd();
 	}
 
-	public void update(final Observable o, final Object arg) {
+	/*public void update(final Observable o, final Object arg) {
 		if (arg==null){
 			System.out.println("update()");
 			updateLatch.countDown();
 		}
-	}
+	}*/
 	
 	/**
 	 * http://stackoverflow.com/questions/442747/getting-the-name-of-the-current-executing-method
@@ -201,12 +170,10 @@ class DelayedAfterUploadCommandHandler extends StorCommandHandler {
 		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");
         try {
 			Thread.sleep(SLEEP_TIME*1000);
-        	//wait();
 		} catch (InterruptedException e) {
 			//e.printStackTrace();
 		}
         System.out.println("проснулся");
-        //FtpUploaderTest.getUpdateLatch().countDown(); // "аварийное" завершение, на случай если у теста нет таймаута
 
         sendReply(session, finalReplyCode, finalReplyMessageKey, finalReplyText, null);
     }

@@ -1,15 +1,12 @@
 package main;
+
 import java.io.File;
 import java.util.List;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-
-import timeout.annotation.processor.TimeoutProxy;
 import uploader.Fabric;
-import uploader.FtpUploader;
 import uploader.Uploadable;
 
 

@@ -5,14 +5,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -20,7 +12,6 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
-
 import timeout.annotation.Timeout;
 import timeout.annotation.processor.TimeoutInvocationHandler;
 
@@ -32,43 +23,30 @@ public class FtpUploader extends Observable implements Uploadable{
 	private FTPClient ftpClient;
 	private final int timeout = 2;
 		
-	/**
-	 * Принудительно завершающаяся по таймауту задача.
-	 * Сделано для предотвращения зависания программы при ожидании ответа сервера.
-	 * @author Ник
-	 *
-	 */
-/*	private class Task implements Callable<Boolean> {
-		public Task(){}
-	    public Boolean call() throws Exception {
-			System.out.println("completePendingCommand()");
-			if (!ftpClient.completePendingCommand()) {
-				return false;
-			}
-			checkReply();
-			return true;
-	    }
-	}
-*/	
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
-
-	public FtpUploader(String server, int port, String userName, String pass) {
+	
+	private Uploadable instance; // Аннотации будут работать, если вызывать методы через экземпляр интерфейса
+	void setInstance(Uploadable instance){
+		this.instance=instance;
+	}
+	
+	/**
+	 * Не вызывать напрямую, использовать фабрику!
+	 * @param server
+	 * @param port
+	 * @param userName
+	 * @param pass
+	 */
+	FtpUploader(String server, int port, String userName, String pass) {
 		this.server = server;
 		this.port = port;
 		this.userName = userName;
 		this.pass = pass;
 	}
 
-	/* (non-Javadoc)
-	 * @see uploader.Uploadable#doFtpStart()
-	 */
 	public void doStart() {
-		// if (ftpClient != null)
-		// 	return;
-		
 		setChanged();
 		notifyObservers(server); // уведомляем обсервера о имени сервера
-
 
 		ftpClient = new FTPClient();
 
@@ -177,7 +155,6 @@ public class FtpUploader extends Observable implements Uploadable{
 
 	private FileInputStream fileInputStream;
 	private OutputStream ftpOutStream;
-	private boolean isNeedReconnect=false;
 
 	/* (non-Javadoc)
 	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
@@ -185,12 +162,8 @@ public class FtpUploader extends Observable implements Uploadable{
 	public boolean uploadToFTP(final File file, String ftpFolder) {
 		setChanged();
 		notifyObservers(file); // уведомляем обсервера о файле
-//		setChanged();
-//		notifyObservers(server); // уведомляем обсервера о имени сервера
-
 
 		if(TimeoutInvocationHandler.timeoutElapsed){
-			TimeoutInvocationHandler.timeoutElapsed=false;
 			reconnect();
 		}
 			
@@ -244,7 +217,7 @@ public class FtpUploader extends Observable implements Uploadable{
 
         executor.shutdownNow();
 */        
-		
+		instance.checkCompleted();
 		
 		return true;
 	}
@@ -262,13 +235,14 @@ public class FtpUploader extends Observable implements Uploadable{
 	}
 
 	public void reconnect() {
-		doEnd();
+		TimeoutInvocationHandler.timeoutElapsed=false;
+		instance.doEnd();
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		doStart();
+		instance.doStart();
 	}
 
 	public void printStatus() throws IOException {

@@ -3,10 +3,8 @@ package uploader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observer;
-
 import org.apache.commons.net.ftp.FTPFile;
 
-import timeout.annotation.Timeout;
 
 public interface Uploadable {
 
