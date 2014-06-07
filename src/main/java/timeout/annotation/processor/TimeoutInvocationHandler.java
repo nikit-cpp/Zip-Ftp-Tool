@@ -34,15 +34,16 @@ public class TimeoutInvocationHandler implements InvocationHandler {
 				}
 			});
 
-			//try {
+			try {
 				System.out.println("Started..");
 				long timeout2 = m.getAnnotation(Timeout.class).value();
 				TimeUnit units2 = m.getAnnotation(Timeout.class).units();
 				ret = future.get(timeout2, units2);
 				System.out.println("Successfully finished!");
-			/*} catch (TimeoutException e) {
+			} catch (TimeoutException e) {
 				System.out.println("caused TimeoutException, terminated!");
-			}*/
+				timeoutElapsed = true;
+			}
 
 			executor.shutdownNow();
 		} else {
@@ -51,4 +52,6 @@ public class TimeoutInvocationHandler implements InvocationHandler {
 
 		return ret;
 	}
+	
+	static public boolean timeoutElapsed = false;
 }

@@ -22,6 +22,7 @@ import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 
 import timeout.annotation.Timeout;
+import timeout.annotation.processor.TimeoutInvocationHandler;
 
 public class FtpUploader extends Observable implements Uploadable{
 	private String server;
@@ -188,8 +189,8 @@ public class FtpUploader extends Observable implements Uploadable{
 //		notifyObservers(server); // уведомляем обсервера о имени сервера
 
 
-		if(isNeedReconnect){
-			isNeedReconnect=false;
+		if(TimeoutInvocationHandler.timeoutElapsed){
+			TimeoutInvocationHandler.timeoutElapsed=false;
 			reconnect();
 		}
 			
@@ -244,26 +245,19 @@ public class FtpUploader extends Observable implements Uploadable{
         executor.shutdownNow();
 */        
 		
+		
 		return true;
 	}
 	
 	@Timeout(timeout)
 	public void checkCompleted(){
 		System.out.println("completePendingCommand()");
-		boolean ok=true;
 		try {
 			if (!ftpClient.completePendingCommand()) {
-				ok=false;
+				;
 			}
 			checkReply();
 		} catch (IOException e) {
-			ok=false;
-		}
-		if(!ok){
-			System.out.println("not OK in completePendingCommand()!");
-			isNeedReconnect=true;
-            super.setChanged();
-            super.notifyObservers(null);
 		}
 	}
 

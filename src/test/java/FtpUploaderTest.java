@@ -21,6 +21,7 @@ import org.mockftpserver.fake.UserAccount;
 import org.mockftpserver.stub.command.QuitCommandHandler;
 import org.mockftpserver.stub.command.StorCommandHandler;
 
+import timeout.annotation.processor.TimeoutInvocationHandler;
 import uploader.Fabric;
 import uploader.FtpUploader;
 import uploader.Uploadable;
@@ -82,6 +83,10 @@ public class FtpUploaderTest implements Observer {
 		ftpUploader.uploadToFTP(createTempFile(), FILE_path);
 		ftpUploader.checkCompleted();
 		
+		if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
+		TimeoutInvocationHandler.timeoutElapsed=false;
+		update(null, null);
+		
 		updateLatch.await(); // Здесь приказываем честно ждать
 		
 		printEndTest();
@@ -93,7 +98,14 @@ public class FtpUploaderTest implements Observer {
 
 		for(int i=0; i<2; i++){
 			ftpUploader.uploadToFTP(createTempFile(), FILE_path+i);
+			ftpUploader.checkCompleted();
+
+			if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
+			TimeoutInvocationHandler.timeoutElapsed=false;
+			ftpUploader.doEnd();
+			ftpUploader.doStart();
 		}
+		update(null, null);
 		
 		updateLatch.await(); // Здесь приказываем честно ждать
 		
