@@ -3,7 +3,8 @@ package uploader.messages;
 public enum MType {
 	SERVER_CHANGED,
 	FILE_CHANGED,
-	PERSENT_CHANGED;
+	PERSENT_CHANGED,
+	EXIT;
 	
 	public static String getServerChangedString(Object o){
 		return ((Message)o).message_s;

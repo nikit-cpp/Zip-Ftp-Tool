@@ -6,8 +6,10 @@ import java.util.Observer;
 import org.apache.commons.configuration.ConfigurationException;
 
 import uploader.Uploadable;
+import uploader.messages.MType;
+import uploader.messages.MessageEmitter;
 
-public class Launcher implements Runnable{
+public class Launcher extends MessageEmitter implements Runnable{
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
@@ -19,6 +21,7 @@ public class Launcher implements Runnable{
 	
 	public Launcher(Observer observer){
 		this.observer=observer;
+		addObserver(observer);
 	}
 	
 	public static void main(String[] args) {
@@ -71,6 +74,8 @@ public class Launcher implements Runnable{
 			
 		} catch (ConfigurationException e) {
 			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());
+		}finally{
+			emitMessage(MType.EXIT, null);
 		}
 	}
 	

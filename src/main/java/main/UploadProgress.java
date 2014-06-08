@@ -8,7 +8,6 @@ import javax.swing.JTextField;
 import uploader.messages.Message;
 
 import java.awt.GridLayout;
-import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
@@ -99,6 +98,9 @@ public class UploadProgress implements Observer {
 		case PERSENT_CHANGED: // ... процента
 			int proc = (int) MType.getPercentChangedDouble(message);
 			setProgressBar(proc);
+			break;
+		case EXIT:
+			System.exit(0);
 			break;
 		}
 	}
