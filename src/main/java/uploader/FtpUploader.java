@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Observable;
 import java.util.Observer;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -12,10 +13,13 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
+
 import timeout.annotation.Timeout;
 import timeout.annotation.processor.TimeoutInvocationHandler;
+import uploader.messages.MessageEmitter;
+import uploader.messages.MType;
 
-public class FtpUploader extends Observable implements Uploadable{
+public class FtpUploader extends MessageEmitter implements Uploadable{
 	private String server;
 	private int port;
 	private String userName;
@@ -45,8 +49,7 @@ public class FtpUploader extends Observable implements Uploadable{
 	}
 
 	public void doStart() {
-		setChanged();
-		notifyObservers(server); // уведомляем обсервера о имени сервера
+		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсервера о имени сервера
 
 		ftpClient = new FTPClient();
 
@@ -160,8 +163,7 @@ public class FtpUploader extends Observable implements Uploadable{
 	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
 	 */
 	public boolean uploadToFTP(final File file, String ftpFolder) {
-		setChanged();
-		notifyObservers(file); // уведомляем обсервера о файле
+		emitMessage(MType.FILE_CHANGED, file.getAbsolutePath()); // уведомляем обсервера о файле
 
 		if(TimeoutInvocationHandler.timeoutElapsed){
 			reconnect();
@@ -194,29 +196,6 @@ public class FtpUploader extends Observable implements Uploadable{
 			streamsClose();
 		}
 
-		
-/*		// решение проблемы зависающего сервера
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Boolean> future = executor.submit(new Task());
-
-		try {
-            System.out.println("Начато ожидание " + timeout + "с.");
-            future.get(timeout, TimeUnit.SECONDS);
-            System.out.println("Successfully finished!");
-        } catch (TimeoutException e) {
-            System.out.println("Время истекло. Переподключение при следующем вызове uploadToFTP().");
-            isNeedReconnect=true;
-            
-            super.setChanged();
-            super.notifyObservers(null);
-        } catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-
-        executor.shutdownNow();
-*/        
 		instance.checkCompleted();
 		
 		return true;
@@ -324,15 +303,14 @@ public class FtpUploader extends Observable implements Uploadable{
 	}
 } // FtpUploader
 
-class MyCopyStreamListener extends Observable implements CopyStreamListener {
+class MyCopyStreamListener extends MessageEmitter implements CopyStreamListener {
 	public void bytesTransferred(long totalBytesTransferred,
 			int bytesTransferred, long streamSize) {
 		double persent = totalBytesTransferred * 100.0 / streamSize;
 		System.out.printf("\r%-30S: %d / %d байт (%f %%)", "Sent",
 				totalBytesTransferred, streamSize, persent);
 		
-		setChanged();
-		notifyObservers(persent); // autoboxing
+		emitMessage(MType.PERSENT_CHANGED, persent); // уведомляем обсервера об изменении процента
 	}
 
 	public void bytesTransferred(CopyStreamEvent event) {

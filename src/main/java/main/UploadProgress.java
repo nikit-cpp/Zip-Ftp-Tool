@@ -1,14 +1,18 @@
 package main;
 import java.awt.EventQueue;
+
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+
+import uploader.messages.Message;
+
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-
+import uploader.messages.MType;
 
 public class UploadProgress implements Observer {
 
@@ -76,23 +80,26 @@ public class UploadProgress implements Observer {
 		frame.getContentPane().add(progressBar);
 	}
 
-	// вызваается при измениении ... 
+	// вызывается при изменении ... 
 	public void update(Observable o, Object arg) {
-		if(arg==null)
+		if(arg==null || arg.getClass()!=Message.class)
 			return;
 		
-		if(arg.getClass()==String.class){ // ... имени сервера
-			txtFtpservernet.setText((String)arg);
+		final Message message = (Message)arg;
+		switch(message.type){
+		case SERVER_CHANGED:// ... имени сервера
+			txtFtpservernet.setText(MType.getServerChangedString(message));
 			resetProgressBar();
 			txtFilezip.setText("");
-		}
-		if(arg.getClass()==File.class){ // ... файла
-			txtFilezip.setText(((File)arg).getAbsolutePath());
+			break;
+		case FILE_CHANGED: // ... файла
+			txtFilezip.setText(MType.getFileChangedString(message));
 			resetProgressBar();
-		}
-		if(arg.getClass()==Double.class){ // ... процента
-			int proc = ((Double)arg).intValue();
+			break;
+		case PERSENT_CHANGED: // ... процента
+			int proc = (int) MType.getPercentChangedDouble(message);
 			setProgressBar(proc);
+			break;
 		}
 	}
 

@@ -68,7 +68,7 @@ public class Launcher implements Runnable{
 					
 				ftpUploader.doEnd();
 			}
-
+			
 		} catch (ConfigurationException e) {
 			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());
 		}
