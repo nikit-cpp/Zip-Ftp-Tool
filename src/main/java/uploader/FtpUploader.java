@@ -107,11 +107,14 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 		}
 	}
 
+	FTPFile[] ftpFilesPool;
 	public FTPFile[] getListOfFile(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
 		// ftpClient.setListHiddenFiles(true);
 		// checkReply();
+		
+		changeOrMakeFolder(folder);
 
 		System.out.println("Запрос текущей папки: "
 				+ ftpClient.printWorkingDirectory());
@@ -119,9 +122,9 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 
 		// возможно, в зависимости от сервера -- побочное действие: меняет
 		// текущую директорию
-		FTPFile[] listFtpFile = ftpClient.listFiles(folder);
+		ftpFilesPool = ftpClient.listFiles(folder);
 		System.out.println("Начало списка файлов в папке " + folder);
-		for (FTPFile file : listFtpFile) {
+		for (FTPFile file : ftpFilesPool) {
 			System.out.println("\"" + file.getName() + "\", " + file.getSize()
 					+ " bytes");
 		}
@@ -133,7 +136,7 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 		System.out.println(ftpClient.printWorkingDirectory());
 		checkReply();
 
-		return listFtpFile;
+		return ftpFilesPool;
 	}
 
 	private final String ROOT_DIR = "/";
@@ -168,7 +171,7 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 			reconnect();
 		}
 			
-		changeOrMakeFolder(ftpFolder);
+//		changeOrMakeFolder(ftpFolder);
 
 		// Выходим, если файлы существуют на сервере
 		if (isExists(file, ftpFolder)) {
@@ -273,19 +276,23 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 	public boolean isExists(File zippedFile, String ftpfolder) {
 		final String localFileName = zippedFile.getName();
 		System.out.println("Проверка наличия файла " + localFileName
-				+ " на сервере в " + ftpfolder);
-		try{
-			FTPFile[] ftpfiles = getListOfFile(ftpfolder); // получаем имеющиеся файлы
-			for (FTPFile ftpFile : ftpfiles) {
-				if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) { // ищем среди них нужный нам файл по имени
-					System.out.println("Файл " + localFileName
-							+ " существует на FTP в папке " + ftpfolder);
-					return true;
+				+ " в " + ftpfolder);
+		try{			
+			for(int i=0; i<2; i++){
+				if(ftpFilesPool==null)
+					ftpFilesPool= getListOfFile(ftpfolder); // инициализация пула
+				for (FTPFile ftpFile : ftpFilesPool) {
+					if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) { // ищем среди них нужный нам файл по имени
+						System.out.println("Файл " + localFileName
+								+ " существует "+ (i==0 ? "в пуле " : "на FTP ") +" в папке " + ftpfolder);
+						return true;
+					}
 				}
+				System.out.println("Файл " + localFileName	+ " не существует " + (i==0 ? "в пуле " : "на FTP ") + " в папке " + ftpfolder);
+				
+				if(i==0) // не нашли файл -- сброс пула
+					ftpFilesPool=null;
 			}
-			System.out.println("Файл " + localFileName
-					+ " не существует на FTP в папке " + ftpfolder);
-			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
