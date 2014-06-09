@@ -28,24 +28,18 @@ public class UploadProgress implements Observer {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		// Вызывает Runnable в GUI-потоке AWT-EventQueue
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					UploadProgress window = new UploadProgress();
-					window.frame.setVisible(true);
-
-					// Создаём поток Launcher, и запускаем его.
-					// Экземпляр window уже создан и мы можем добавлять
-					// обсерверы
-					launcher = new Starter(window);
-					Thread dataLoader = new Thread(launcher);
-					dataLoader.start();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		UploadProgress window = new UploadProgress();
+		try {
+			// Создаём поток Launcher, и запускаем его.
+			// Экземпляр window уже создан и мы можем добавлять
+			// обсерверы
+			launcher = new Starter(window);
+			Thread dataLoader = new Thread(launcher);
+			dataLoader.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		window.frame.setVisible(true);
 	}
 
 	/**
