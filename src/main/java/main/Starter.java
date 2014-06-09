@@ -9,23 +9,23 @@ import session.Session;
 import session.messages.MType;
 import session.messages.MessageEmitter;
 
-public class Launcher extends MessageEmitter implements Runnable{
+public class Starter extends MessageEmitter implements Runnable{
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
 	
 	private Observer observer;
 	
-	public Launcher(){
+	public Starter(){
 	}
 	
-	public Launcher(Observer observer){
+	public Starter(Observer observer){
 		this.observer=observer;
 		addObserver(observer);
 	}
 	
 	public static void main(String[] args) {
-		new Launcher().run();
+		new Starter().run();
 	}
 	
 	public void run() {

@@ -20,7 +20,7 @@ public class UploadProgress implements Observer {
 	private JTextField txtFtpservernet;
 	private JTextField txtFilezip;
 	private JProgressBar progressBar;
-	private static Launcher launcher;
+	private static Starter launcher;
 
 	/**
 	 * Launch the application.
@@ -38,7 +38,7 @@ public class UploadProgress implements Observer {
 					// Создаём поток Launcher, и запускаем его.
 					// Экземпляр window уже создан и мы можем добавлять
 					// обсерверы
-					launcher = new Launcher(window);
+					launcher = new Starter(window);
 					Thread dataLoader = new Thread(launcher);
 					dataLoader.start();
 				} catch (Exception e) {
