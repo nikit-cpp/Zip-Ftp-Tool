@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Observer;
 
+import main.Config;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -279,6 +281,11 @@ public class FtpSession extends MessageEmitter implements Session{
 				+ " в " + ftpfolder);
 		try{			
 			for(int i=0; i<2; i++){
+				if(!Config.getInstance().getIsFtpFilesPool()){ // если пул отключен -- то сброс пула и выход из цикла
+					i=2;
+					ftpFilesPool=null;
+				}
+				
 				if(ftpFilesPool==null)
 					ftpFilesPool= getFiles(ftpfolder); // инициализация пула
 				for (FTPFile ftpFile : ftpFilesPool) {
@@ -297,7 +304,16 @@ public class FtpSession extends MessageEmitter implements Session{
 			e.printStackTrace();
 		}
 		return false;
-	}
+	}	
+	
+//	private void createPoolIfNeed(String ftpfolder) throws IOException{
+//		if(ftpFilesPool==null)
+//			ftpFilesPool= getFiles(ftpfolder); // инициализация пула
+//	}
+//	
+//	private void clearPool(){
+//		ftpFilesPool=null;
+//	}
 
 	public String getServer() {
 		return server;

@@ -20,6 +20,7 @@ public class Config {
 	private final String lookupFolder = "lookupFolder";
 	private final String destFolder = "destFolder";
 	private final String ftpFolder = "ftpFolder";
+	private final String isFtpFilesPool = "isFtpFilesPool";
 	
 	// Конструктор
 	private Config() throws ConfigurationException{
@@ -60,6 +61,12 @@ public class Config {
 		String value = xmlConfig.getString(ftpFolder);
 		System.out.println(ftpFolder +":" +value);
 		return value;
+	}
+	
+	public boolean getIsFtpFilesPool() {
+		String value = xmlConfig.getString(isFtpFilesPool);
+		System.out.println(isFtpFilesPool +":" +value);
+		return Boolean.parseBoolean(value);
 	}
 	
 	public Session[] createFtpUploaderArray() throws ConfigurationException {
@@ -106,6 +113,7 @@ public class Config {
 		xmlConfig.addProperty(lookupFolder, "E:\\Мои документы\\МИРЭА\\Защита Информации");
 		xmlConfig.addProperty(destFolder, "E:\\Мои документы\\МИРЭА\\Защита Информации");
 		xmlConfig.addProperty(ftpFolder, "public_html");
+		xmlConfig.addProperty(isFtpFilesPool, "true");
 		
 		xmlConfig.addProperty("servers.server(0).url", "ftp.server1.com");
 		xmlConfig.addProperty("servers.server(0).port", "21");
