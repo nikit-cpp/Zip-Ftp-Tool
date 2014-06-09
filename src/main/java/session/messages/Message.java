@@ -1,4 +1,4 @@
-package uploader.messages;
+package session.messages;
 
 public class Message {
 	public Message(MType t, Object o) {

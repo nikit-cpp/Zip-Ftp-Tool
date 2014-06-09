@@ -1,21 +1,25 @@
 import static org.junit.Assert.*;
+
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.*;
+
 import org.mockftpserver.core.command.CommandNames;
-import org.mockftpserver.core.session.Session;
 import org.mockftpserver.fake.filesystem.FileEntry;
 import org.mockftpserver.fake.filesystem.FileSystem;
 import org.mockftpserver.fake.filesystem.UnixFakeFileSystem;
 import org.mockftpserver.fake.FakeFtpServer;
 import org.mockftpserver.fake.UserAccount;
 import org.mockftpserver.stub.command.StorCommandHandler;
+
+import session.Fabric;
+import session.Session;
 import timeout.annotation.processor.TimeoutInvocationHandler;
-import uploader.Fabric;
-import uploader.Uploadable;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +42,7 @@ public class FtpUploaderTest  {
 	private static final String login = "login";
 	private static final String password = "password";
 
-	private Uploadable ftpUploader;
+	private Session ftpUploader;
 	private FakeFtpServer fakeFtpServer;
 
 	private FileSystem fileSystem;
@@ -47,7 +51,7 @@ public class FtpUploaderTest  {
 	public void testGetListOfFile() throws IOException {
 		printStartTest();
 		
-		FTPFile[] xFiles = ftpUploader.getListOfFile(FILE_path);
+		FTPFile[] xFiles = ftpUploader.getFiles(FILE_path);
 		assertThat(xFiles, is(not(nullValue())));
 		
 		// Утверждаем что у нас 1 файл
@@ -61,7 +65,7 @@ public class FtpUploaderTest  {
 	public void testSingleUploadToFTP() throws Exception {
 		printStartTest();
 
-		ftpUploader.uploadToFTP(createTempFile(), FILE_path);
+		ftpUploader.upload(createTempFile(), FILE_path);
 		
 		if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
 		TimeoutInvocationHandler.timeoutElapsed=false;
@@ -74,7 +78,7 @@ public class FtpUploaderTest  {
 		printStartTest();
 
 		for(int i=0; i<2; i++){
-			ftpUploader.uploadToFTP(createTempFile(), FILE_path+i);
+			ftpUploader.upload(createTempFile(), FILE_path+i);
 			ftpUploader.checkCompleted();
 
 			if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
@@ -166,7 +170,7 @@ public class FtpUploaderTest  {
 class DelayedAfterUploadCommandHandler extends StorCommandHandler {
 	private final int SLEEP_TIME = 100;
 	
-    protected void sendFinalReply(Session session) {
+    protected void sendFinalReply(org.mockftpserver.core.session.Session session) {
 		System.out.println("Сервак завис на "+SLEEP_TIME+" секунды...");
         try {
 			Thread.sleep(SLEEP_TIME*1000);

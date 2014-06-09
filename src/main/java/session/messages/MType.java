@@ -1,4 +1,4 @@
-package uploader.messages;
+package session.messages;
 
 public enum MType {
 	SERVER_CHANGED,

@@ -6,13 +6,13 @@ import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 
-import uploader.messages.Message;
+import session.messages.MType;
+import session.messages.Message;
 
 import java.awt.GridLayout;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-import uploader.messages.MType;
 
 public class UploadProgress implements Observer {
 

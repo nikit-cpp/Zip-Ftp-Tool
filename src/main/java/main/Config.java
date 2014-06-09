@@ -2,12 +2,14 @@ package main;
 
 import java.io.File;
 import java.util.List;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import uploader.Fabric;
-import uploader.Uploadable;
+
+import session.Fabric;
+import session.Session;
 
 
 public class Config {
@@ -60,11 +62,11 @@ public class Config {
 		return value;
 	}
 	
-	public Uploadable[] createFtpUploaderArray() throws ConfigurationException {
+	public Session[] createFtpUploaderArray() throws ConfigurationException {
 		// получить количество_серверов
 		int size = xmlConfig.getList("servers.server.url").size();
 		//создать массив/аррэйлист
-		Uploadable[] ftpa = new Uploadable[size];
+		Session[] ftpa = new Session[size];
 		
 		List<HierarchicalConfiguration> servers = 
 			    xmlConfig.configurationsAt("servers.server");

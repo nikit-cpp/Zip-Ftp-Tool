@@ -1,4 +1,4 @@
-package uploader.messages;
+package session.messages;
 
 import java.util.Observable;
 import java.util.Observer;

@@ -1,4 +1,4 @@
-package uploader;
+package session;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,12 +13,12 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 
+import session.messages.MType;
+import session.messages.MessageEmitter;
 import timeout.annotation.Timeout;
 import timeout.annotation.processor.TimeoutInvocationHandler;
-import uploader.messages.MessageEmitter;
-import uploader.messages.MType;
 
-public class FtpUploader extends MessageEmitter implements Uploadable{
+public class FtpSession extends MessageEmitter implements Session{
 	private String server;
 	private int port;
 	private String userName;
@@ -28,8 +28,8 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 		
 	private MyCopyStreamListener listener = new MyCopyStreamListener();
 	
-	private Uploadable instance; // Аннотации будут работать, если вызывать методы через экземпляр интерфейса
-	void setInstance(Uploadable instance){
+	private Session instance; // Аннотации будут работать, если вызывать методы через экземпляр интерфейса
+	void setInstance(Session instance){
 		this.instance=instance;
 	}
 	
@@ -40,7 +40,7 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 	 * @param userName
 	 * @param pass
 	 */
-	FtpUploader(String server, int port, String userName, String pass) {
+	FtpSession(String server, int port, String userName, String pass) {
 		this.server = server;
 		this.port = port;
 		this.userName = userName;
@@ -108,7 +108,7 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 	}
 
 	FTPFile[] ftpFilesPool;
-	public FTPFile[] getListOfFile(String folder) throws IOException {
+	public FTPFile[] getFiles(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
 		// ftpClient.setListHiddenFiles(true);
@@ -164,7 +164,7 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 	/* (non-Javadoc)
 	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
 	 */
-	public boolean uploadToFTP(final File file, String ftpFolder) {
+	public boolean upload(final File file, String ftpFolder) {
 		emitMessage(MType.FILE_CHANGED, file.getAbsolutePath()); // уведомляем обсервера о файле
 
 		if(TimeoutInvocationHandler.timeoutElapsed){
@@ -280,7 +280,7 @@ public class FtpUploader extends MessageEmitter implements Uploadable{
 		try{			
 			for(int i=0; i<2; i++){
 				if(ftpFilesPool==null)
-					ftpFilesPool= getListOfFile(ftpfolder); // инициализация пула
+					ftpFilesPool= getFiles(ftpfolder); // инициализация пула
 				for (FTPFile ftpFile : ftpFilesPool) {
 					if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) { // ищем среди них нужный нам файл по имени
 						System.out.println("Файл " + localFileName

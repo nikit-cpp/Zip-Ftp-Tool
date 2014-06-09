@@ -5,9 +5,9 @@ import java.util.Observer;
 
 import org.apache.commons.configuration.ConfigurationException;
 
-import uploader.Uploadable;
-import uploader.messages.MType;
-import uploader.messages.MessageEmitter;
+import session.Session;
+import session.messages.MType;
+import session.messages.MessageEmitter;
 
 public class Launcher extends MessageEmitter implements Runnable{
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
@@ -52,12 +52,12 @@ public class Launcher extends MessageEmitter implements Runnable{
 		// create new filename filter
         FilenameFilter fileNameFilter = new ZipFilenameFilter();
         
-        Uploadable[] ftpUploaders; // для каждого сервера -- свой Uploadable 
+        Session[] ftpUploaders; // для каждого сервера -- свой Uploadable 
 		try {
 			ftpUploaders = Config.getInstance().createFtpUploaderArray();
 		    propagateObserver(observer, ftpUploaders);
 
-			for(Uploadable ftpUploader: ftpUploaders){
+			for(Session ftpUploader: ftpUploaders){
 				ftpUploader.doStart();
 				
 				System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
@@ -65,7 +65,7 @@ public class Launcher extends MessageEmitter implements Runnable{
 					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
 					System.out.println("Полный путь к файлу "+zippedFile.getAbsolutePath());
 					
-					ftpUploader.uploadToFTP(zippedFile, ftpFolder_);
+					ftpUploader.upload(zippedFile, ftpFolder_);
 					//ftpUploader.checkCompleted();
 				}
 					
@@ -79,9 +79,9 @@ public class Launcher extends MessageEmitter implements Runnable{
 		}
 	}
 	
-	private void propagateObserver(Observer o, Uploadable[] ftpUploaders){
+	private void propagateObserver(Observer o, Session[] ftpUploaders){
         if(observer!=null)
-        	for(Uploadable u : ftpUploaders){
+        	for(Session u : ftpUploaders){
         		u.addObserver(o);
         	}
 	}
