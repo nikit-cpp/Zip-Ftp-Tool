@@ -50,12 +50,14 @@ public class FtpSession extends MessageEmitter implements Session{
 	}
 
 	public void doStart() {
+		emitMessage(MType.NEW_PROGRESS_WINDOW, null);
+
 		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсервера о имени сервера
 
 		ftpClient = new FTPClient();
 
 		try {
-			System.out.println("Подключение...");
+			System.out.println("Подключение к " + server);
 			ftpClient.connect(server, port);
 			System.out.println("Connected to " + server + ".");
 			checkReply();

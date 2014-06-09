@@ -14,13 +14,13 @@ public class Starter extends MessageEmitter implements Runnable{
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
 	
-	private Observer observer;
+//	private Observer observer;
 	
 	public Starter(){
 	}
 	
 	public Starter(Observer observer){
-		this.observer=observer;
+//		this.observer=observer;
 		addObserver(observer);
 	}
 	
@@ -32,7 +32,7 @@ public class Starter extends MessageEmitter implements Runnable{
 		System.out.println("HELLO.");
 		//System.in.read();
 						
-		File lookupFolder = new File(lookupFolder_);
+		final File lookupFolder = new File(lookupFolder_);
 		
 		System.out.println("Проверка просматриваемой папки...");
 		System.out.println("Путь: "+lookupFolder.getAbsolutePath());
@@ -50,27 +50,37 @@ public class Starter extends MessageEmitter implements Runnable{
 		}
 				
 		// create new filename filter
-        FilenameFilter fileNameFilter = new ZipFilenameFilter();
+        final FilenameFilter fileNameFilter = new ZipFilenameFilter();
         
         Session[] ftpUploaders; // для каждого сервера -- свой Uploadable 
 		try {
 			ftpUploaders = Config.getInstance().createFtpUploaderArray();
-		    propagateObserver(observer, ftpUploaders);
-
-			for(Session ftpUploader: ftpUploaders){
-				ftpUploader.doStart();
-				
-				System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
-				for(File zippedFile : lookupFolder.listFiles(fileNameFilter)){
-					System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
-					System.out.println("Полный путь к файлу "+zippedFile.getAbsolutePath());
-					
-					ftpUploader.upload(zippedFile, ftpFolder_);
-					//ftpUploader.checkCompleted();
-				}
-					
-				ftpUploader.doEnd();
+			
+			Thread[] threads = new Thread[ftpUploaders.length];
+			
+			int i=0;
+			for(; i<ftpUploaders.length; ){
+				final Session ftpUploader=ftpUploaders[i];
+				threads[i++] = new Thread(new Runnable(){
+					public void run(){						
+						ftpUploader.doStart();
+						System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
+						for(File zippedFile : lookupFolder.listFiles(fileNameFilter)){
+							System.out.println("\nЗаливаем файл "+zippedFile.getName() + " на FTP...");
+							System.out.println("Полный путь к файлу "+zippedFile.getAbsolutePath());
+							
+							ftpUploader.upload(zippedFile, ftpFolder_);
+						}
+							
+						ftpUploader.doEnd();
+					}
+				});
 			}
+			
+			for(Thread thread : threads){
+				thread.start();
+			}
+
 			
 		} catch (ConfigurationException e) {
 			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());
@@ -79,12 +89,12 @@ public class Starter extends MessageEmitter implements Runnable{
 		}
 	}
 	
-	private void propagateObserver(Observer o, Session[] ftpUploaders){
-        if(observer!=null)
-        	for(Session u : ftpUploaders){
-        		u.addObserver(o);
-        	}
-	}
+//	private void propagateObserver(Observer o, Session[] ftpUploaders){
+//        if(observer!=null)
+//        	for(Session u : ftpUploaders){
+//        		u.addObserver(o);
+//        	}
+//	}
 }
 
 class ZipFilenameFilter implements FilenameFilter{

@@ -16,7 +16,7 @@ import java.util.Observer;
 
 public class UploadProgress implements Observer {
 
-	private JFrame frame;
+	JFrame frame;
 	private JTextField txtFtpservernet;
 	private JTextField txtFilezip;
 	private JProgressBar progressBar;
@@ -27,21 +27,21 @@ public class UploadProgress implements Observer {
 	 * 
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
-		UploadProgress window = new UploadProgress();
-		try {
-			// Создаём поток Launcher, и запускаем его.
-			// Экземпляр window уже создан и мы можем добавлять
-			// обсерверы
-			launcher = new Starter(window);
-			Thread dataLoader = new Thread(launcher);
-			dataLoader.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		window.frame.setVisible(true);
-	}
-
+//	public static void main(String[] args) throws IOException {
+//		UploadProgress window = new UploadProgress();
+//		try {
+//			// Создаём поток Launcher, и запускаем его.
+//			// Экземпляр window уже создан и мы можем добавлять
+//			// обсерверы
+//			launcher = new Starter(window);
+//			Thread dataLoader = new Thread(launcher);
+//			dataLoader.start();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		window.frame.setVisible(true);
+//	}
+//
 	/**
 	 * Create the application.
 	 */
@@ -100,8 +100,7 @@ public class UploadProgress implements Observer {
 					int proc = (int) MType.getPercentChangedDouble(message);
 					setProgressBar(proc);
 					break;
-				case EXIT:
-					System.exit(0);
+				default:
 					break;
 				}
 			}
