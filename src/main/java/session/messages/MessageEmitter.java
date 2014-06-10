@@ -6,12 +6,12 @@ import java.util.Observer;
 public abstract class MessageEmitter extends Observable {
 	protected boolean emitAvailable=false;
 	
-	public void addObserver(Observer o){
+	synchronized public void addObserver(Observer o){
 		emitAvailable=true;
 		super.addObserver(o);
 	}
 
-	public void emitMessage(MType t, Object o){
+	synchronized public void emitMessage(MType t, Object o){
 		if(!emitAvailable)
 			return;
 		

@@ -29,13 +29,13 @@ public class GUI implements Observer {
 	}
 
 	// вызывается при изменении ...
-	public void update(final Observable o, Object arg) {
+	synchronized public void update(final Observable o, Object arg) {
 		if (arg == null || arg.getClass() != Message.class)
 			return;
 
 		final Message message = (Message) arg;
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
+		//EventQueue.invokeLater(new Runnable() {
+//			public void run() {
 				switch (message.type) {
 				case EXIT:
 					System.exit(0);
@@ -49,7 +49,7 @@ public class GUI implements Observer {
 					break;
 				}
 			}
-		});
-	}
+		//});
+	//}
 
 }

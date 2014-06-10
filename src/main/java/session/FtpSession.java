@@ -49,7 +49,9 @@ public class FtpSession extends MessageEmitter implements Session{
 		this.pass = pass;
 	}
 
-	public void doStart() {
+	synchronized public void doStart() {
+		System.out.println("doStart()");
+		
 		emitMessage(MType.NEW_PROGRESS_WINDOW, null);
 
 		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсервера о имени сервера
@@ -93,7 +95,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	 * @see uploader.Uploadable#doFtpEnd()
 	 */
 	@Timeout(timeout)
-	public void doEnd() {
+	synchronized public void doEnd() {
 		try {
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
@@ -112,7 +114,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	}
 
 	FTPFile[] ftpFilesPool;
-	public FTPFile[] getFiles(String folder) throws IOException {
+	synchronized public FTPFile[] getFiles(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
 		// ftpClient.setListHiddenFiles(true);
@@ -168,7 +170,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	/* (non-Javadoc)
 	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
 	 */
-	public boolean upload(final File file, String ftpFolder) {
+	synchronized public boolean upload(final File file, String ftpFolder) {
 		emitMessage(MType.FILE_CHANGED, file.getAbsolutePath()); // уведомляем обсервера о файле
 
 		if(TimeoutInvocationHandler.timeoutElapsed){
@@ -208,7 +210,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	}
 	
 	@Timeout(timeout)
-	public void checkCompleted(){
+	synchronized public void checkCompleted(){
 		System.out.println("completePendingCommand()");
 		try {
 			if (!ftpClient.completePendingCommand()) {
@@ -317,11 +319,11 @@ public class FtpSession extends MessageEmitter implements Session{
 //		ftpFilesPool=null;
 //	}
 
-	public String getServer() {
+	synchronized public String getServer() {
 		return server;
 	}
 		
-	public void addObserver(Observer o){
+	synchronized public void addObserver(Observer o){
 		super.addObserver(o);
 		listener.addObserver(o);
 	}
