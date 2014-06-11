@@ -32,8 +32,7 @@ public class Config {
 		}
 	}
 
-	synchronized public static Config getInstance(){
-		System.out.println("Config getInstance()");
+	public static Config getInstance(){
 		if (instance==null){
 			try {
 				instance=new Config();
@@ -70,61 +69,17 @@ public class Config {
 		return Boolean.parseBoolean(value);
 	}
 	
-//	public Session[] createFtpUploaderArray() throws ConfigurationException {
-//		// получить количество_серверов
-//		int size = xmlConfig.getList("servers.server.url").size();
-//		//создать массив/аррэйлист
-//		Session[] ftpa = new Session[size];
-//		
-//		List<HierarchicalConfiguration> servers = 
-//			    xmlConfig.configurationsAt("servers.server");
-//		System.out.println("Loading servers configuration...");
-//		int i = 0;
-//		for(HierarchicalConfiguration sub : servers){
-//			// sub contains all data about a single field
-//			try{
-//				String url = sub.getString("url");
-//				int port = sub.getInt("port");
-//				String login = sub.getString("login");
-//				String password = sub.getString("password");
-//				
-//				System.out.println("loaded url: "+url + " port: " + port + " login: "+ login);
-//				
-//			    ftpa[i++] = Fabric.createFtpUploader(url, port, login, password);
-//			}catch(ConversionException e){
-//				String msg0 = e.getMessages()[0];
-//				String msg1 = e.getMessages()[1];
-//				//String msg2 = e.getMessages()[2];
-//				System.out.println("Ошибка считывания: для элемента:\"" + msg0 + "\" ошибка:\"" + msg1 + "\"");
-//				throw e;
-//			}
-//		} 
-//		
-//		
-//		// фор и=0; и<количество_серверов; и++
-//		
-//		return ftpa;
-//	}
-	
-	/**
-	 * получить количество_серверов
-	 * @return
-	 */
-	public int getServersCount(){
-		return xmlConfig.getList("servers.server.url").size();
-	}
-	
-	/*volatile*/ private int index=0;
-	
-	synchronized public Session createFtpUploader() throws ConfigurationException {
-		System.out.println("createFtpUploader()...");
+	public Session[] createFtpUploaderArray() throws ConfigurationException {
+		// получить количество_серверов
+		int size = xmlConfig.getList("servers.server.url").size();
+		//создать массив/аррэйлист
+		Session[] ftpa = new Session[size];
+		
 		List<HierarchicalConfiguration> servers = 
 			    xmlConfig.configurationsAt("servers.server");
 		System.out.println("Loading servers configuration...");
-
-
-			HierarchicalConfiguration sub =servers.get(index++);
-			
+		int i = 0;
+		for(HierarchicalConfiguration sub : servers){
 			// sub contains all data about a single field
 			try{
 				String url = sub.getString("url");
@@ -134,14 +89,20 @@ public class Config {
 				
 				System.out.println("loaded url: "+url + " port: " + port + " login: "+ login);
 				
-			    return Fabric.createFtpUploader(url, port, login, password);
+			    ftpa[i++] = Fabric.createFtpUploader(url, port, login, password);
 			}catch(ConversionException e){
 				String msg0 = e.getMessages()[0];
 				String msg1 = e.getMessages()[1];
 				//String msg2 = e.getMessages()[2];
 				System.out.println("Ошибка считывания: для элемента:\"" + msg0 + "\" ошибка:\"" + msg1 + "\"");
 				throw e;
-			}	
+			}
+		} 
+		
+		
+		// фор и=0; и<количество_серверов; и++
+		
+		return ftpa;
 	}
 
 	private void createDefaultConfigFile() throws ConfigurationException{

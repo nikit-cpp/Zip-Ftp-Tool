@@ -49,9 +49,7 @@ public class FtpSession extends MessageEmitter implements Session{
 		this.pass = pass;
 	}
 
-	synchronized public void doStart() {
-		System.out.println("doStart()");
-		
+	public void doStart() {
 		emitMessage(MType.NEW_PROGRESS_WINDOW, null);
 
 		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсервера о имени сервера
@@ -95,7 +93,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	 * @see uploader.Uploadable#doFtpEnd()
 	 */
 	@Timeout(timeout)
-	synchronized public void doEnd() {
+	public void doEnd() {
 		try {
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
@@ -114,7 +112,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	}
 
 	FTPFile[] ftpFilesPool;
-	synchronized public FTPFile[] getFiles(String folder) throws IOException {
+	public FTPFile[] getFiles(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
 		// ftpClient.setListHiddenFiles(true);
@@ -170,7 +168,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	/* (non-Javadoc)
 	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
 	 */
-	synchronized public boolean upload(final File file, String ftpFolder) {
+	public boolean upload(final File file, String ftpFolder) {
 		emitMessage(MType.FILE_CHANGED, file.getAbsolutePath()); // уведомляем обсервера о файле
 
 		if(TimeoutInvocationHandler.timeoutElapsed){
@@ -210,7 +208,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	}
 	
 	@Timeout(timeout)
-	synchronized public void checkCompleted(){
+	public void checkCompleted(){
 		System.out.println("completePendingCommand()");
 		try {
 			if (!ftpClient.completePendingCommand()) {
@@ -319,11 +317,11 @@ public class FtpSession extends MessageEmitter implements Session{
 //		ftpFilesPool=null;
 //	}
 
-	synchronized public String getServer() {
+	public String getServer() {
 		return server;
 	}
 		
-	synchronized public void addObserver(Observer o){
+	public void addObserver(Observer o){
 		super.addObserver(o);
 		listener.addObserver(o);
 	}

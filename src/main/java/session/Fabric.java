@@ -3,7 +3,7 @@ package session;
 import timeout.annotation.processor.TimeoutProxy;
 
 public class Fabric {
-	synchronized public static Session createFtpUploader(String server, int port, String userName, String pass){
+	public static Session createFtpUploader(String server, int port, String userName, String pass){
 		
 		FtpSession uploader = new FtpSession(server, port, userName, pass);
 		
