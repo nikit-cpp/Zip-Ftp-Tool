@@ -2,6 +2,8 @@ package main;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Observer;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import org.apache.commons.configuration.ConfigurationException;
 
@@ -14,13 +16,13 @@ public class Starter extends MessageEmitter implements Runnable{
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
 	
-//	private Observer observer;
+	private Observer observer;
 	
 	public Starter(){
 	}
 	
 	public Starter(Observer observer){
-//		this.observer=observer;
+		this.observer=observer;
 		addObserver(observer);
 	}
 	
@@ -48,7 +50,7 @@ public class Starter extends MessageEmitter implements Runnable{
 				zipper.zip(zippableFolder, destFolder_);
 			}
 		}
-				
+		
 		// create new filename filter
         final FilenameFilter fileNameFilter = new ZipFilenameFilter();
         
@@ -57,11 +59,14 @@ public class Starter extends MessageEmitter implements Runnable{
 			ftpUploaders = Config.getInstance().createFtpUploaderArray();
 			
 			Thread[] threads = new Thread[ftpUploaders.length];
+			final CyclicBarrier cb = new CyclicBarrier(ftpUploaders.length+1);
 			
 			int i=0;
 			for(; i<ftpUploaders.length; ){
 				final Session ftpUploader=ftpUploaders[i];
+				ftpUploader.addObserver(observer);
 				threads[i++] = new Thread(new Runnable(){
+					
 					public void run(){						
 						ftpUploader.doStart();
 						System.out.println("\nРаботаем с FTP " + ftpUploader.getServer());
@@ -73,6 +78,13 @@ public class Starter extends MessageEmitter implements Runnable{
 						}
 							
 						ftpUploader.doEnd();
+						try {
+							cb.await();
+						} catch (InterruptedException e) {
+							e.printStackTrace(); // TODO Auto-generated catch block
+						} catch (BrokenBarrierException e) {
+							e.printStackTrace(); // TODO Auto-generated catch block
+						}
 					}
 				});
 			}
@@ -80,7 +92,13 @@ public class Starter extends MessageEmitter implements Runnable{
 			for(Thread thread : threads){
 				thread.start();
 			}
-
+			try {
+				cb.await();
+			} catch (InterruptedException e) {
+				e.printStackTrace(); // TODO Auto-generated catch block
+			} catch (BrokenBarrierException e) {
+				e.printStackTrace(); // TODO Auto-generated catch block
+			}
 			
 		} catch (ConfigurationException e) {
 			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());

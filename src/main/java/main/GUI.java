@@ -21,7 +21,6 @@ public class GUI implements Observer {
 			// Экземпляр window уже создан и мы можем добавлять
 			// обсерверы
 			launcher = new Starter(gui);
-			
 			launcher.run();
 		} catch (Exception e) {
 			e.printStackTrace();

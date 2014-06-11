@@ -52,7 +52,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	public void doStart() {
 		emitMessage(MType.NEW_PROGRESS_WINDOW, null);
 
-		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсервера о имени сервера
+		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсерверов о имени сервера
 
 		ftpClient = new FTPClient();
 
