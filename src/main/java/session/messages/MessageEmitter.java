@@ -7,6 +7,7 @@ public abstract class MessageEmitter extends Observable {
 	protected boolean emitAvailable=false;
 	
 	public void addObserver(Observer o){
+		if(o==null) return;
 		emitAvailable=true;
 		super.addObserver(o);
 	}

@@ -54,6 +54,10 @@ public class FtpSession extends MessageEmitter implements Session{
 
 		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсерверов о имени сервера
 
+		start();
+	}
+	
+	private void start(){
 		ftpClient = new FTPClient();
 
 		try {
@@ -227,7 +231,7 @@ public class FtpSession extends MessageEmitter implements Session{
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		instance.doStart();
+		start();
 	}
 
 	public void printStatus() throws IOException {
