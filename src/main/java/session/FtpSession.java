@@ -49,7 +49,7 @@ public class FtpSession extends MessageEmitter implements Session{
 		this.pass = pass;
 	}
 
-	public void doStart() {
+	synchronized public void doStart() {
 		emitMessage(MType.NEW_PROGRESS_WINDOW, null);
 
 		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсерверов о имени сервера

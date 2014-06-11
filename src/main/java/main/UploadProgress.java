@@ -10,7 +10,6 @@ import session.messages.MType;
 import session.messages.Message;
 
 import java.awt.GridLayout;
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -20,28 +19,6 @@ public class UploadProgress implements Observer {
 	private JTextField txtFtpservernet;
 	private JTextField txtFilezip;
 	private JProgressBar progressBar;
-	private static Starter launcher;
-
-	/**
-	 * Launch the application.
-	 * 
-	 * @throws IOException
-	 */
-//	public static void main(String[] args) throws IOException {
-//		UploadProgress window = new UploadProgress();
-//		try {
-//			// Создаём поток Launcher, и запускаем его.
-//			// Экземпляр window уже создан и мы можем добавлять
-//			// обсерверы
-//			launcher = new Starter(window);
-//			Thread dataLoader = new Thread(launcher);
-//			dataLoader.start();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		window.frame.setVisible(true);
-//	}
-//
 	/**
 	 * Create the application.
 	 */
