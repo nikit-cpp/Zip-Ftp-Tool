@@ -6,24 +6,30 @@ import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 
-import session.messages.MType;
-import session.messages.Message;
+import controller.Controller;
+import controller.Event;
+import controller.Listener;
 
 import java.awt.GridLayout;
 import java.util.Observable;
 import java.util.Observer;
 
-public class UploadProgress implements Observer {
+public class UploadProgress implements Listener {
 
 	JFrame frame;
 	private JTextField txtFtpservernet;
 	private JTextField txtFilezip;
 	private JProgressBar progressBar;
+	
+	private long id; // id для того чтобы слушать сообщения только своего потока
 	/**
 	 * Create the application.
 	 */
-	public UploadProgress() {
+	public UploadProgress(long id) {
 		initialize();
+		this.id=id;
+		System.out.println("created UploadProgress window for thread id = " + this.id);
+		Controller.getInstance().addListener(this);
 	}
 
 	/**
@@ -53,28 +59,33 @@ public class UploadProgress implements Observer {
 		progressBar.setValue(50);
 		frame.getContentPane().add(progressBar);
 	}
+	
+	public void show() {
+		frame.setVisible(true);
+	}
+
 
 	// вызывается при изменении ...
-	public void update(Observable o, Object arg) {
-		if (arg == null || arg.getClass() != Message.class)
+	public void onEvent(final Event event) {
+		if (event == null)
+			return;
+		if(Event.getThreadId(event)!=id)
 			return;
 
-		final Message message = (Message) arg;
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				switch (message.type) {
+				switch (event.type) {
 				case SERVER_CHANGED:// ... имени сервера
-					txtFtpservernet.setText(MType
-							.getServerChangedString(message));
+					txtFtpservernet.setText(Event.getServerChangedString(event));
 					resetProgressBar();
 					txtFilezip.setText("");
 					break;
 				case FILE_CHANGED: // ... файла
-					txtFilezip.setText(MType.getFileChangedString(message));
+					txtFilezip.setText(Event.getFileChangedString(event));
 					resetProgressBar();
 					break;
 				case PERSENT_CHANGED: // ... процента
-					int proc = (int) MType.getPercentChangedDouble(message);
+					int proc = (int) Event.getPercentChangedDouble(event);
 					setProgressBar(proc);
 					break;
 				default:

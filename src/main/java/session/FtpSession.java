@@ -1,4 +1,5 @@
 package session;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,12 +16,13 @@ import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
 
-import session.messages.MType;
-import session.messages.MessageEmitter;
+import controller.Controller;
+import controller.Event;
+import controller.Event.Events;
 import timeout.annotation.Timeout;
 import timeout.annotation.processor.TimeoutInvocationHandler;
 
-public class FtpSession extends MessageEmitter implements Session{
+public class FtpSession implements Session{
 	private String server;
 	private int port;
 	private String userName;
@@ -50,9 +52,9 @@ public class FtpSession extends MessageEmitter implements Session{
 	}
 
 	synchronized public void doStart() {
-		emitMessage(MType.NEW_PROGRESS_WINDOW, null);
+//		Controller.getInstance().fireEvent(new Event(Events.NEW_PROGRESS_WINDOW, null));
 
-		emitMessage(MType.SERVER_CHANGED, server); // уведомляем обсерверов о имени сервера
+		Controller.getInstance().fireEvent(new Event(Events.SERVER_CHANGED, server)); // уведомляем обсерверов о имени сервера
 
 		start();
 	}
@@ -173,7 +175,7 @@ public class FtpSession extends MessageEmitter implements Session{
 	 * @see uploader.Uploadable#uploadToFTP(java.io.File, java.lang.String)
 	 */
 	public boolean upload(final File file, String ftpFolder) {
-		emitMessage(MType.FILE_CHANGED, file.getAbsolutePath()); // уведомляем обсервера о файле
+		Controller.getInstance().fireEvent(new Event(Events.FILE_CHANGED, file.getAbsolutePath())); // уведомляем обсервера о файле
 
 		if(TimeoutInvocationHandler.timeoutElapsed){
 			reconnect();
@@ -324,21 +326,16 @@ public class FtpSession extends MessageEmitter implements Session{
 	public String getServer() {
 		return server;
 	}
-		
-	public void addObserver(Observer o){
-		super.addObserver(o);
-		listener.addObserver(o);
-	}
 } // FtpUploader
 
-class MyCopyStreamListener extends MessageEmitter implements CopyStreamListener {
+class MyCopyStreamListener implements CopyStreamListener {
 	public void bytesTransferred(long totalBytesTransferred,
 			int bytesTransferred, long streamSize) {
 		double persent = totalBytesTransferred * 100.0 / streamSize;
 		System.out.printf("\r%-30S: %d / %d байт (%f %%)", "Sent",
 				totalBytesTransferred, streamSize, persent);
 		
-		emitMessage(MType.PERSENT_CHANGED, persent); // уведомляем обсервера об изменении процента
+		Controller.getInstance().fireEvent(new Event(Events.PERSENT_CHANGED, persent)); // уведомляем обсервера об изменении процента
 	}
 
 	public void bytesTransferred(CopyStreamEvent event) {

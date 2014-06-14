@@ -1,31 +1,26 @@
 package main;
+
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Observer;
+import java.io.IOException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 import org.apache.commons.configuration.ConfigurationException;
 
+import controller.Controller;
+import controller.Event;
+import controller.Event.Events;
 import session.Session;
-import session.messages.MType;
-import session.messages.MessageEmitter;
 
-public class Starter extends MessageEmitter implements Runnable{
+public class Starter implements Runnable{
 	public static final String lookupFolder_=Config.getInstance().getLookupFoder();
 	public static final String destFolder_ = Config.getInstance().getDestFoder();
 	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
-	
-	private Observer observer;
-	
+		
 	public Starter(){
 	}
-	
-	public Starter(Observer observer){
-		this.observer=observer;
-		addObserver(observer);
-	}
-	
+		
 	public static void main(String[] args) {
 		new Starter().run();
 	}
@@ -64,7 +59,6 @@ public class Starter extends MessageEmitter implements Runnable{
 			int i=0;
 			for(; i<ftpUploaders.length; ){
 				final Session ftpUploader=ftpUploaders[i];
-				ftpUploader.addObserver(observer);
 				threads[i++] = new Thread(new Runnable(){
 					
 					public void run(){						
@@ -81,38 +75,39 @@ public class Starter extends MessageEmitter implements Runnable{
 						try {
 							cb.await();
 						} catch (InterruptedException e) {
-							e.printStackTrace(); // TODO Auto-generated catch block
+//							e.printStackTrace();
 						} catch (BrokenBarrierException e) {
-							e.printStackTrace(); // TODO Auto-generated catch block
+//							e.printStackTrace();
 						}
 					}
 				});
 			}
 			
 			for(Thread thread : threads){
+				System.out.println("для потока id="+thread.getId());
+				// создаём окно ассоциированное с потоком
+				Controller.getInstance().fireEvent(new Event(Events.NEW_PROGRESS_WINDOW, thread.getId()));
+				// запускаем поток
 				thread.start();
 			}
+			//System.in.read();
 			try {
 				cb.await();
 			} catch (InterruptedException e) {
-				e.printStackTrace(); // TODO Auto-generated catch block
+//				e.printStackTrace();
 			} catch (BrokenBarrierException e) {
-				e.printStackTrace(); // TODO Auto-generated catch block
+//				e.printStackTrace();
 			}
 			
 		} catch (ConfigurationException e) {
 			System.out.println("Ошибка при загрузке списка серверов : " + e.getStackTrace());
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
 		}finally{
-			emitMessage(MType.EXIT, null);
+			Controller.getInstance().fireEvent(new Event(Events.EXIT, null));
 		}
 	}
-	
-//	private void propagateObserver(Observer o, Session[] ftpUploaders){
-//        if(observer!=null)
-//        	for(Session u : ftpUploaders){
-//        		u.addObserver(o);
-//        	}
-//	}
 }
 
 class ZipFilenameFilter implements FilenameFilter{
