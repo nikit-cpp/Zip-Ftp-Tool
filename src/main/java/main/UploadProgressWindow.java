@@ -1,34 +1,29 @@
 package main;
 
 import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-
 import controller.Controller;
 import controller.Event;
 import controller.Listener;
-
 import java.awt.GridLayout;
-import java.util.Observable;
-import java.util.Observer;
 
-public class UploadProgress implements Listener {
+public class UploadProgressWindow implements Listener {
 
 	JFrame frame;
 	private JTextField txtFtpservernet;
 	private JTextField txtFilezip;
 	private JProgressBar progressBar;
 	
-	private long id; // id для того чтобы слушать сообщения только своего потока
+	private long threadId; // id для того чтобы слушать сообщения только своего потока
 	/**
 	 * Create the application.
 	 */
-	public UploadProgress(long id) {
+	public UploadProgressWindow(long threadId) {
 		initialize();
-		this.id=id;
-		System.out.println("created UploadProgress window for thread id = " + this.id);
+		this.threadId=threadId;
+		System.out.println("created UploadProgress window for thread id = " + this.threadId);
 		Controller.getInstance().addListener(this);
 	}
 
@@ -69,7 +64,7 @@ public class UploadProgress implements Listener {
 	public void onEvent(final Event event) {
 		if (event == null)
 			return;
-		if(Event.getThreadId(event)!=id)
+		if(Event.getThreadId(event)!=threadId)
 			return;
 
 		EventQueue.invokeLater(new Runnable() {

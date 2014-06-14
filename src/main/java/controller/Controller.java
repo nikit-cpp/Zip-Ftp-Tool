@@ -2,7 +2,7 @@ package controller;
 
 import java.util.ArrayList;
 
-import main.UploadProgress;
+import main.UploadProgressWindow;
 
 public class Controller implements Listener{
 	private Controller(){
@@ -50,7 +50,7 @@ public class Controller implements Listener{
 			// создаём окно
 			if(!allowGui)
 				break;
-			UploadProgress progressWindow = new UploadProgress(Event.getThreadId(event)); // добавление слушателя -- в конструкторе окна
+			UploadProgressWindow progressWindow = new UploadProgressWindow(Event.getThreadId(event)); // добавление слушателя -- в конструкторе окна
 			progressWindow.show();
 			break;
 		default:

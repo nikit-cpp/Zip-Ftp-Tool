@@ -13,8 +13,9 @@ import session.Session;
 
 
 public class Config {
-	private String filename = "config.xml";
 	private static Config instance = null;
+	
+	private String filename = "config.xml";
 	private XMLConfiguration xmlConfig;
 	
 	private final String lookupFolder = "lookupFolder";
@@ -23,24 +24,23 @@ public class Config {
 	private final String isFtpFilesPool = "isFtpFilesPool";
 	
 	// Конструктор
-	private Config() throws ConfigurationException{
-		File configfile = new File(filename);
+	private Config(){
+		try{
+			File configfile = new File(filename);
 		if(!configfile.exists()){
 			createDefaultConfigFile();
 		}else{
 			xmlConfig = new XMLConfiguration(filename);
 		}
+		}catch(ConfigurationException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	synchronized public static Config getInstance(){
 		if (instance==null){
-			try {
-				instance=new Config();
-			} catch (ConfigurationException e) {
-				System.out.println("Error on creating Config class");
-				e.printStackTrace();
-				System.exit(1);
-			}
+			instance=new Config();
 		}
 		return instance;
 	}
@@ -69,7 +69,7 @@ public class Config {
 		return Boolean.parseBoolean(value);
 	}
 	
-	public Session[] createFtpUploaderArray() throws ConfigurationException {
+	public Session[] createFtpUploaderArray() {
 		// получить количество_серверов
 		int size = xmlConfig.getList("servers.server.url").size();
 		//создать массив/аррэйлист

@@ -1,12 +1,7 @@
 package main;
 
 import java.io.IOException;
-import java.util.Observable;
-import java.util.Observer;
-
 import controller.Controller;
-import controller.Event;
-import controller.Listener;
 
 public class GUI {
 	private static Starter launcher;
