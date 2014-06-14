@@ -51,7 +51,8 @@ public class FtpUploaderTest  {
 	public void testGetListOfFile() throws IOException {
 		printStartTest();
 		
-		FTPFile[] xFiles = ftpUploader.getFiles(FILE_path);
+		FTPFile[] xFiles = ftpUploader.getFtpFiles(FILE_path);
+
 		assertThat(xFiles, is(not(nullValue())));
 		
 		// Утверждаем что у нас 1 файл

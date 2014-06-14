@@ -17,5 +17,8 @@ public interface Session {
 	
 	public void checkCompleted();
 
-	public abstract FTPFile[] getFiles(String remoteFolder) throws IOException;
+	/**
+	 * Используется только в тесте
+	 */
+	public abstract FTPFile[] getFtpFiles(String remoteFolder) throws IOException;
 }

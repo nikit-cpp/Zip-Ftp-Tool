@@ -114,7 +114,7 @@ public class FtpSession implements Session{
 	}
 
 	FTPFile[] ftpFilesPool;
-	public FTPFile[] getFiles(String folder) throws IOException {
+	public FTPFile[] getFtpFiles(String folder) throws IOException {
 		// Это переключение на отображение ТОЛЬКО скрытых файлов
 		// System.out.println("Запрашиваю скрытые файлы...");
 		// ftpClient.setListHiddenFiles(true);
@@ -291,7 +291,7 @@ public class FtpSession implements Session{
 				}
 				
 				if(ftpFilesPool==null)
-					ftpFilesPool= getFiles(ftpfolder); // инициализация пула
+					ftpFilesPool= getFtpFiles(ftpfolder); // инициализация пула
 				for (FTPFile ftpFile : ftpFilesPool) {
 					if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) { // ищем среди них нужный нам файл по имени
 						System.out.println("Файл " + localFileName
