@@ -32,7 +32,7 @@ public class Config {
 		}
 	}
 
-	public static Config getInstance(){
+	synchronized public static Config getInstance(){
 		if (instance==null){
 			try {
 				instance=new Config();
