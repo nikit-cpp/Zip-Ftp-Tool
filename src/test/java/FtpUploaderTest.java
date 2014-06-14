@@ -80,7 +80,7 @@ public class FtpUploaderTest  {
 
 		for(int i=0; i<2; i++){
 			ftpUploader.upload(createTempFile(), FILE_path+i);
-			ftpUploader.checkCompleted();
+			//ftpUploader.checkCompleted();
 
 			if (! TimeoutInvocationHandler.timeoutElapsed==true) wait();
 		}

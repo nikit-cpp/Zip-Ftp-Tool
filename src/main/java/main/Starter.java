@@ -59,12 +59,12 @@ public class Starter implements Runnable {
 
 		// Инициализируем потоки
 		for (int i = 0; i < sessions.length; i++) {
-			final Session ftpUploader = sessions[i];
+			final Session session = sessions[i];
 			threads[i] = new Thread(new Runnable() {
 				public void run() {
-					ftpUploader.doStart();
+					session.doStart();
 					System.out.println("\nРаботаем с FTP "
-							+ ftpUploader.getServer());
+							+ session.getServer());
 					for (File zippedFile : lookupFolder
 							.listFiles(zipfiles)) {
 						System.out.println("\nЗаливаем файл "
@@ -72,10 +72,14 @@ public class Starter implements Runnable {
 						System.out.println("Полный путь к файлу "
 								+ zippedFile.getAbsolutePath());
 
-						ftpUploader.upload(zippedFile, ftpFolder_);
+						// грузим нерадивый файл несколько раз
+						boolean success = false;
+						do{
+							success = session.upload(zippedFile, ftpFolder_);
+						}while(!success);
 					}
 
-					ftpUploader.doEnd();
+					session.doEnd();
 					try {
 						cb.await();
 					} catch (InterruptedException e) {

@@ -96,6 +96,8 @@ public class FtpSession implements Session{
 	 */
 	@Timeout(timeout)
 	public void doEnd() {
+		if(ftpClient==null)
+			return;
 		try {
 			System.out.println("Разлогинивание...");
 			ftpClient.logout();
@@ -110,6 +112,7 @@ public class FtpSession implements Session{
 					//ioe.printStackTrace();
 				}
 			}
+			ftpClient=null; // не самый лучший код
 		}
 	}
 
@@ -173,7 +176,7 @@ public class FtpSession implements Session{
 	public boolean upload(final File file, String ftpFolder) {
 		Controller.getInstance().fireEvent(new Event(Events.FILE_CHANGED, file.getAbsolutePath())); // уведомляем обсервера о файле
 
-		if(TimeoutInvocationHandler.timeoutElapsed){
+		if(TimeoutInvocationHandler.timeoutElapsed || ftpClient==null){
 			reconnect();
 		}
 			
@@ -181,7 +184,7 @@ public class FtpSession implements Session{
 
 		// Выходим, если файлы существуют на сервере
 		if (isExists(file, ftpFolder)) {
-			return false;
+			return true;
 		}
 
 		try {
@@ -203,32 +206,36 @@ public class FtpSession implements Session{
 		} finally {
 			streamsClose();
 		}
-
-		instance.checkCompleted();
 		
-		return true;
+		boolean ret=true;
+		try{
+			ret = instance.checkCompleted(); // Здесь произойдёт исключение при превышении таймаута, ибо значение мы так и не получим
+		}catch(NullPointerException e){
+			ret=false;
+		}
+		
+		return ret;
 	}
 	
 	@Timeout(timeout)
-	public void checkCompleted(){
+	public boolean checkCompleted(){
 		System.out.println("completePendingCommand()");
 		try {
 			if (!ftpClient.completePendingCommand()) {
-				;
+				return false;
 			}
 			checkReply();
-		} catch (IOException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 
 	public void reconnect() {
 		TimeoutInvocationHandler.timeoutElapsed=false;
 		instance.doEnd();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+
 		start();
 	}
 
@@ -279,8 +286,8 @@ public class FtpSession implements Session{
 		}
 	}
 
-	public boolean isExists(File zippedFile, String ftpfolder) {
-		final String localFileName = zippedFile.getName();
+	public boolean isExists(File localZippedFile, String ftpfolder) {
+		final String localFileName = localZippedFile.getName();
 		System.out.println("Проверка наличия файла " + localFileName
 				+ " в " + ftpfolder);
 		try{			
@@ -293,7 +300,11 @@ public class FtpSession implements Session{
 				if(ftpFilesPool==null)
 					ftpFilesPool= getFtpFiles(ftpfolder); // инициализация пула
 				for (FTPFile ftpFile : ftpFilesPool) {
-					if (ftpFile.isFile() && ftpFile.getName().equals(localFileName)) { // ищем среди них нужный нам файл по имени
+					if (
+							ftpFile.isFile() &&
+							ftpFile.getName().equals(localFileName) &&
+							ftpFile.getSize()==localZippedFile.length()
+						) { // ищем среди них нужный нам файл по имени
 						System.out.println("Файл " + localFileName
 								+ " существует "+ (i==0 ? "в пуле " : "на FTP ") +" в папке " + ftpfolder);
 						return true;

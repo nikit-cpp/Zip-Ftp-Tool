@@ -15,7 +15,7 @@ public interface Session {
 	
 	public abstract String getServer();
 	
-	public void checkCompleted();
+	public boolean checkCompleted();
 
 	/**
 	 * Используется только в тесте
