@@ -83,6 +83,9 @@ public class UploadProgressWindow implements Listener {
 					int proc = (int) Event.getPercentChangedDouble(event);
 					setProgressBar(proc);
 					break;
+				case UPLOAD_COMPLETED:
+					txtFilezip.setText("Все файлы были загружены!");
+					break;
 				default:
 					break;
 				}

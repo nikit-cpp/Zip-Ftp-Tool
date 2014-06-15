@@ -2,8 +2,10 @@ package main;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+
 import controller.Controller;
 import controller.Event;
 import controller.Event.Events;
@@ -76,10 +78,18 @@ public class Starter implements Runnable {
 						boolean success = false;
 						do{
 							success = session.upload(zippedFile, ftpFolder_);
+							if(!success){
+								System.out.println("Нажмите любую клавишу для повторной попытки...");
+								try {
+									System.in.read();
+								} catch (IOException e) {
+								}
+							}
 						}while(!success);
 					}
 
 					session.doEnd();
+					Controller.getInstance().fireEvent(new Event(Events.UPLOAD_COMPLETED, null));
 					try {
 						cb.await();
 					} catch (InterruptedException e) {

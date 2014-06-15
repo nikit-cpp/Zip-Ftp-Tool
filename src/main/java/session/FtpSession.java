@@ -234,6 +234,7 @@ public class FtpSession implements Session{
 
 	public void reconnect() {
 		TimeoutInvocationHandler.timeoutElapsed=false;
+		streamsClose();
 		instance.doEnd();
 
 		start();
