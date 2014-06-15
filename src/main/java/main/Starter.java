@@ -78,13 +78,13 @@ public class Starter implements Runnable {
 						boolean success = false;
 						do{
 							success = session.upload(zippedFile, ftpFolder_);
-							if(!success){
-								System.out.println("Нажмите любую клавишу для повторной попытки...");
-								try {
-									System.in.read();
-								} catch (IOException e) {
-								}
-							}
+//							if(!success){
+//								System.out.println("Нажмите любую клавишу для повторной попытки...");
+//								try {
+//									System.in.read();
+//								} catch (IOException e) {
+//								}
+//							}
 						}while(!success);
 					}
 
