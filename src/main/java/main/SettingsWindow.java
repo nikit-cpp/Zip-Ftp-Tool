@@ -21,6 +21,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.AbstractListModel;
 
 public class SettingsWindow {
 
@@ -81,7 +82,16 @@ public class SettingsWindow {
 		dlm.add(0, "FTP-Сервер2");
 		dlm.add(0, "WebDAV-сервер");
 
-		JList<String> list = new JList<String>(dlm);
+		JList<String> list = new JList<String>();
+		list.setModel(new AbstractListModel() {
+			String[] values = new String[] {"ftp1", "ftp2", "webdav"};
+			public int getSize() {
+				return values.length;
+			}
+			public Object getElementAt(int index) {
+				return values[index];
+			}
+		});
 		list.setBounds(10, 171, 371, 146);
 		frame.getContentPane().add(list);
 		
@@ -123,6 +133,7 @@ public class SettingsWindow {
 		frame.getContentPane().add(button);
 		
 		JButton button_1 = new JButton("^");
+		button_1.setEnabled(false);
 		button_1.setBounds(283, 328, 46, 143);
 		frame.getContentPane().add(button_1);
 		
@@ -148,30 +159,35 @@ public class SettingsWindow {
 		frame.getContentPane().add(button_5);
 		
 		txtServernet = new JTextField();
+		txtServernet.setEditable(false);
 		txtServernet.setText("server.net");
 		txtServernet.setBounds(10, 359, 263, 20);
 		frame.getContentPane().add(txtServernet);
 		txtServernet.setColumns(10);
 		
 		txtLogin = new JTextField();
+		txtLogin.setEditable(false);
 		txtLogin.setText("login");
 		txtLogin.setColumns(10);
 		txtLogin.setBounds(10, 420, 263, 20);
 		frame.getContentPane().add(txtLogin);
 		
 		txtPassword = new JTextField();
+		txtPassword.setEditable(false);
 		txtPassword.setText("password");
 		txtPassword.setColumns(10);
 		txtPassword.setBounds(10, 451, 263, 20);
 		frame.getContentPane().add(txtPassword);
 		
 		txtPort = new JTextField();
+		txtPort.setEditable(false);
 		txtPort.setText("port");
 		txtPort.setBounds(10, 390, 86, 20);
 		frame.getContentPane().add(txtPort);
 		txtPort.setColumns(10);
 		
 		JComboBox comboBox = new JComboBox();
+		comboBox.setEnabled(false);
 		comboBox.setModel(new DefaultComboBoxModel(new String[] {"ftp", "webDav"}));
 		comboBox.setBounds(106, 390, 167, 20);
 		frame.getContentPane().add(comboBox);
@@ -181,9 +197,15 @@ public class SettingsWindow {
 		frame.getContentPane().add(btnNewButton_1);
 		
 		txtDisplayName = new JTextField();
+		txtDisplayName.setEditable(false);
 		txtDisplayName.setText("display name");
 		txtDisplayName.setColumns(10);
 		txtDisplayName.setBounds(10, 328, 263, 20);
 		frame.getContentPane().add(txtDisplayName);
+		
+		JButton btnV = new JButton("...");
+		btnV.setEnabled(false);
+		btnV.setBounds(391, 265, 43, 36);
+		frame.getContentPane().add(btnV);
 	}
 }
