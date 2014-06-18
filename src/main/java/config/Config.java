@@ -1,16 +1,13 @@
 package config;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-
-import session.Fabric;
-import session.Session;
 
 
 public class Config {
@@ -22,10 +19,6 @@ public class Config {
 	//@Inject
 	private XMLConfiguration xmlConfig;
 	
-//	private final String lookupFolder = "lookupFolder";
-//	private final String destFolder = "destFolder";
-//	private final String ftpFolder = "ftpFolder";
-//	private final String isFtpFilesPool = "isFtpFilesPool";
 	private HashMap<Settings, Object> defaults = new HashMap<Settings, Object>();
 	
 	// Конструктор
@@ -81,52 +74,26 @@ public class Config {
 			break;
 		}
 	}
-
-//	public String getLookupFoder() {
-//		String value = xmlConfig.getString(lookupFolder);
-//		System.out.println(lookupFolder +":" +value);
-//		return value;
-//	}
-//	
-//	public String getDestFoder() {
-//		String value = xmlConfig.getString(destFolder);
-//		System.out.println(destFolder +":" +value);
-//		return value;
-//	}
-//	
-//	public String getFtpFoder() {
-//		String value = xmlConfig.getString(ftpFolder);
-//		System.out.println(ftpFolder +":" +value);
-//		return value;
-//	}
-//	
-//	public boolean getIsFtpFilesPool() {
-//		String value = xmlConfig.getString(isFtpFilesPool);
-//		System.out.println(isFtpFilesPool +":" +value);
-//		return Boolean.parseBoolean(value);
-//	}
 	
-	public Session[] createFtpUploaderArray() {
+	ArrayList<Server> serversList = new ArrayList<Server>();
+	public ArrayList<Server> getServersList() {
+		if(serversList.size()==0)
+			createFtpUploaderArray();
+		return serversList;
+	}
+
+	private void createFtpUploaderArray() {
 		// получить количество_серверов
-		int size = xmlConfig.getList("servers.server.url").size();
+		//int size = xmlConfig.getList("servers.server.url").size();
 		//создать массив/аррэйлист
-		Session[] ftpa = new Session[size];
 		
-		List<HierarchicalConfiguration> servers = 
-			    xmlConfig.configurationsAt("servers.server");
+		List<HierarchicalConfiguration> servers = xmlConfig.configurationsAt("servers.server");
 		System.out.println("Loading servers configuration...");
-		int i = 0;
 		for(HierarchicalConfiguration sub : servers){
 			// sub contains all data about a single field
 			try{
-				String url = sub.getString("url");
-				int port = sub.getInt("port");
-				String login = sub.getString("login");
-				String password = sub.getString("password");
-				
-				System.out.println("loaded url: "+url + " port: " + port + " login: "+ login);
-				
-			    ftpa[i++] = Fabric.createFtpUploader(url, port, login, password);
+				Server server = new Server(sub.getString("url"), sub.getInt("port"), sub.getString("login"), sub.getString("password"));
+				serversList.add(server);
 			}catch(ConversionException e){
 				String msg0 = e.getMessages()[0];
 				String msg1 = e.getMessages()[1];
@@ -135,11 +102,6 @@ public class Config {
 				throw e;
 			}
 		} 
-		
-		
-		// фор и=0; и<количество_серверов; и++
-		
-		return ftpa;
 	}
 
 	private void createDefaultConfigFile() throws ConfigurationException{

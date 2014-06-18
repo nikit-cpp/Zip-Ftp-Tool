@@ -1,5 +1,9 @@
 package session;
 
+import java.util.ArrayList;
+
+import config.Config;
+import config.Server;
 import timeout.annotation.processor.TimeoutProxy;
 
 public class Fabric {
@@ -13,4 +17,17 @@ public class Fabric {
 		
 		return instance;
 	}
+	
+	public static Session[] createFtpUploaderArray() {
+		ArrayList<Server> serversList = Config.getInstance().getServersList();
+		Session[] ftpa = new Session[serversList.size()];
+		
+		for(int i=0; i<serversList.size(); i++){
+			Server s = serversList.get(i);
+			ftpa[i] = Fabric.createFtpUploader(s.getAdress(), s.getPort(), s.getLogin(), s.getPassword());
+		} 
+				
+		return ftpa;
+	}
+
 }

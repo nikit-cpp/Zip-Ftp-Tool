@@ -10,6 +10,7 @@ import config.Settings;
 import controller.Controller;
 import controller.Event;
 import controller.Event.Events;
+import session.Fabric;
 import session.Session;
 
 public class Starter implements Runnable {
@@ -50,7 +51,7 @@ public class Starter implements Runnable {
 		final FilenameFilter zipfiles = new ZipFilenameFilter();
 
 		// Отдельная сессия на каждый сервер
-		Session[] sessions = Config.getInstance().createFtpUploaderArray();
+		Session[] sessions = Fabric.createFtpUploaderArray();
 
 		// Создаём массив потоков
 		Thread[] threads = new Thread[sessions.length];
