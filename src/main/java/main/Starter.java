@@ -2,7 +2,6 @@ package main;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -12,11 +11,9 @@ import controller.Event.Events;
 import session.Session;
 
 public class Starter implements Runnable {
-	public static final String lookupFolder_ = Config.getInstance()
-			.getLookupFoder();
-	public static final String destFolder_ = Config.getInstance()
-			.getDestFoder();
-	public static final String ftpFolder_ = Config.getInstance().getFtpFoder(); // "/public_html"
+	public static final String lookupFolder_ = Config.getInstance().getString(Settings.LOOKUP_FOLDER);
+	public static final String destFolder_ = Config.getInstance().getString(Settings.DEST_FOLDER);
+	public static final String ftpFolder_ = Config.getInstance().getString(Settings.FTP_FOLDER);
 
 	public Starter() {
 	}

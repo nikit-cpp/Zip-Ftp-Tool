@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import main.Config;
+import main.Settings;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -12,6 +15,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.io.CopyStreamEvent;
 import org.apache.commons.net.io.CopyStreamListener;
 import org.apache.commons.net.io.Util;
+
 import controller.Controller;
 import controller.Event;
 import controller.Event.Events;
@@ -293,7 +297,7 @@ public class FtpSession implements Session{
 				+ " в " + ftpfolder);
 		try{			
 			for(int i=0; i<2; i++){
-				if(!Config.getInstance().getIsFtpFilesPool()){ // если пул отключен -- то сброс пула и выход из цикла
+				if(!Config.getInstance().getBoolean(Settings.IS_FTP_FILES_POOL)){ // если пул отключен -- то сброс пула и выход из цикла
 					i=2;
 					ftpFilesPool=null;
 				}
