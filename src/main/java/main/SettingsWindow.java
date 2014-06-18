@@ -101,13 +101,13 @@ public class SettingsWindow {
 		frame.getContentPane().add(btnNewButton);
 		
 		txtE = new JTextField();
-		txtE.setText("E:\\Мои документы\\МИРЭА\\Защита Информации");
+		txtE.setText("C:\\Мои документы\\МИРЭА\\Защита Информации");
 		txtE.setBounds(10, 51, 298, 20);
 		frame.getContentPane().add(txtE);
 		txtE.setColumns(10);
 		
 		txtE_1 = new JTextField();
-		txtE_1.setText("E:\\Мои документы\\МИРЭА\\Защита Информации");
+		txtE_1.setText("C:\\Мои документы\\МИРЭА\\Защита Информации");
 		txtE_1.setColumns(10);
 		txtE_1.setBounds(10, 82, 298, 20);
 		frame.getContentPane().add(txtE_1);
@@ -117,7 +117,7 @@ public class SettingsWindow {
 		frame.getContentPane().add(btnDestfolder);
 		
 		txtpublichtml = new JTextField();
-		txtpublichtml.setText("/public_html");
+		txtpublichtml.setText("/public");
 		txtpublichtml.setColumns(10);
 		txtpublichtml.setBounds(10, 114, 298, 20);
 		frame.getContentPane().add(txtpublichtml);

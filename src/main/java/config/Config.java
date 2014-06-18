@@ -78,14 +78,13 @@ public class Config {
 	ArrayList<Server> serversList = new ArrayList<Server>();
 	public ArrayList<Server> getServersList() {
 		if(serversList.size()==0)
-			createFtpUploaderArray();
+			readServers();
 		return serversList;
 	}
 
-	private void createFtpUploaderArray() {
+	private void readServers() {
 		// получить количество_серверов
 		//int size = xmlConfig.getList("servers.server.url").size();
-		//создать массив/аррэйлист
 		
 		List<HierarchicalConfiguration> servers = xmlConfig.configurationsAt("servers.server");
 		System.out.println("Loading servers configuration...");
@@ -125,6 +124,14 @@ public class Config {
 //		xmlConfig.addProperty("servers.server(1).password", "pass2");
 
 		xmlConfig.save();
+	}
+	
+	public void saveConfig(){
+		try {
+			xmlConfig.save();
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+		}
 	}
 }
 
