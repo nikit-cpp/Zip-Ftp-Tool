@@ -23,6 +23,8 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.AbstractListModel;
 
+import org.apache.commons.configuration.XMLConfiguration;
+
 public class SettingsWindow {
 
 	private JFrame frame;
@@ -207,5 +209,13 @@ public class SettingsWindow {
 		btnV.setEnabled(false);
 		btnV.setBounds(391, 265, 43, 36);
 		frame.getContentPane().add(btnV);
+		
+		XMLConfiguration xmlConfig = new XMLConfiguration();
+		xmlConfig.setProperty("key", "value1");
+		System.out.println(xmlConfig.getString("key"));
+		
+		xmlConfig.setProperty("key", "value2");
+		System.out.println(xmlConfig.getString("key"));
+
 	}
 }
