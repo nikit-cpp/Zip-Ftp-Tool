@@ -5,6 +5,8 @@ import java.io.FilenameFilter;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
+import config.Config;
+import config.Settings;
 import controller.Controller;
 import controller.Event;
 import controller.Event.Events;

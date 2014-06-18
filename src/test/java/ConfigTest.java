@@ -1,10 +1,11 @@
 import static org.junit.Assert.*;
-import main.Config;
-import main.Settings;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import config.Config;
+import config.Settings;
 
 
 public class ConfigTest {

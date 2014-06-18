@@ -1,4 +1,4 @@
-package main;
+package config;
 
 public enum Settings {
 	LOOKUP_FOLDER,
