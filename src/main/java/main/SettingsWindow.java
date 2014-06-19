@@ -55,6 +55,8 @@ public class SettingsWindow {
 		btnSave = new JButton("^");
 		btnDel = new JButton("-");
 		btnEdit = new JButton("...");
+		ServerListModel slm = new ServerListModel();
+		listServers = new JList(slm);
 		initialize();
 	}
 
@@ -67,6 +69,7 @@ public class SettingsWindow {
 	private final JButton btnSave;
 	private final JButton btnDel;
 	private final JButton btnEdit;
+	private final JList<String> listServers;
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -88,6 +91,8 @@ public class SettingsWindow {
 				
 				btnSave.setEnabled(false);
 				lockServerinfo();
+				unlockServerListManipulatebuttons();
+				listServers.setEnabled(true);
 			}
 		});
 
@@ -107,6 +112,7 @@ public class SettingsWindow {
 				unlockServerinfo();
 				btnSave.setEnabled(true);
 				lockServerListManipulatebuttons();
+				listServers.setEnabled(false);
 			}
 		});
 		
@@ -114,9 +120,7 @@ public class SettingsWindow {
 		btnEdit.setBounds(391, 265, 43, 36);
 		frame.getContentPane().add(btnEdit);
 				
-		ServerListModel slm = new ServerListModel();
-		JList<String> list = new JList(slm);
-		list.addListSelectionListener(new ListSelectionListener() {
+		listServers.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent arg0) {
 				int selected = ((JList)arg0.getSource()).getSelectedIndex();
 				populateServerInfo(selected);
@@ -124,8 +128,8 @@ public class SettingsWindow {
 			}
 		});
 		
-		list.setBounds(10, 171, 371, 146);
-		frame.getContentPane().add(list);
+		listServers.setBounds(10, 171, 371, 146);
+		frame.getContentPane().add(listServers);
 
 		btnNewButton.setBounds(339, 50, 95, 23);
 		frame.getContentPane().add(btnNewButton);
