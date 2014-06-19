@@ -30,11 +30,12 @@ public class Config {
 		
 		try{
 			File configfile = new File(filename);
-		if(!configfile.exists()){
-			createDefaultConfigFile();
-		}else{
-			xmlConfig = new XMLConfiguration(filename);
-		}
+			if(!configfile.exists()){
+				createDefaultConfigFile();
+			}else{
+				xmlConfig = new XMLConfiguration(filename);
+				readServers();
+			}
 		}catch(ConfigurationException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -75,13 +76,21 @@ public class Config {
 		}
 	}
 	
-	ArrayList<Server> serversList = new ArrayList<Server>();
-	public ArrayList<Server> getServersList() {
-		if(serversList.size()==0)
-			readServers();
-		return serversList;
-	}
+	private ArrayList<Server> serversList = new ArrayList<Server>();
+//	public ArrayList<Server> getServersList() {
+//		if(serversList.size()==0)
+//			readServers();
+//		return serversList;
+//	}
 
+	synchronized public int getServersCount(){
+		return serversList.size();
+	}
+	
+	synchronized public Server getServer(int index){
+		return serversList.get(index);
+	}
+	
 	private void readServers() {
 		// получить количество_серверов
 		//int size = xmlConfig.getList("servers.server.url").size();

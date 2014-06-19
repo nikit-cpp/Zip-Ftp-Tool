@@ -2,22 +2,15 @@ package main;
 
 import java.awt.EventQueue;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
-import java.awt.BorderLayout;
 import java.awt.Window.Type;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 
 import javax.swing.JButton;
 
-import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 
 import javax.swing.JCheckBox;
 import javax.swing.JList;
@@ -25,10 +18,11 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.AbstractListModel;
 
-import org.apache.commons.configuration.XMLConfiguration;
-
 import config.Config;
 import config.Server;
+
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 
 public class SettingsWindow {
 
@@ -60,11 +54,10 @@ public class SettingsWindow {
 		initialize();
 	}
 
-	private JTextField txtServernet;
+	private JTextField txtAdress;
 	private JTextField txtLogin;
 	private JTextField txtPassword;
 	private JTextField txtPort;
-	private JTextField txtDisplayName;
 
 	/**
 	 * Initialize the contents of the frame.
@@ -79,13 +72,15 @@ public class SettingsWindow {
 		frame.getContentPane().setLayout(null);
 
 		JButton btnNewButton = new JButton("lookupFolder");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
 
 		ServerListModel slm = new ServerListModel();
 		JList<String> list = new JList(slm);
+		list.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent arg0) {
+				int selected = ((JList)arg0.getSource()).getSelectedIndex();
+				populateServerInfo(selected);
+			}
+		});
 		
 		list.setBounds(10, 171, 371, 146);
 		frame.getContentPane().add(list);
@@ -154,12 +149,12 @@ public class SettingsWindow {
 		button_5.setBounds(10, 144, 17, 20);
 		frame.getContentPane().add(button_5);
 
-		txtServernet = new JTextField();
-		txtServernet.setEditable(false);
-		txtServernet.setText("server.net");
-		txtServernet.setBounds(10, 359, 263, 20);
-		frame.getContentPane().add(txtServernet);
-		txtServernet.setColumns(10);
+		txtAdress = new JTextField();
+		txtAdress.setEditable(false);
+		txtAdress.setText("server.net");
+		txtAdress.setBounds(10, 359, 263, 20);
+		frame.getContentPane().add(txtAdress);
+		txtAdress.setColumns(10);
 
 		txtLogin = new JTextField();
 		txtLogin.setEditable(false);
@@ -182,57 +177,36 @@ public class SettingsWindow {
 		frame.getContentPane().add(txtPort);
 		txtPort.setColumns(10);
 
-		JComboBox comboBox = new JComboBox();
-		comboBox.setEnabled(false);
-		comboBox.setModel(new DefaultComboBoxModel(new String[] { "ftp",
-				"webDav" }));
-		comboBox.setBounds(106, 390, 167, 20);
-		frame.getContentPane().add(comboBox);
-
 		JButton btnNewButton_1 = new JButton("Завершить");
 		btnNewButton_1.setBounds(343, 448, 91, 23);
 		frame.getContentPane().add(btnNewButton_1);
-
-		txtDisplayName = new JTextField();
-		txtDisplayName.setEditable(false);
-		txtDisplayName.setText("display name");
-		txtDisplayName.setColumns(10);
-		txtDisplayName.setBounds(10, 328, 263, 20);
-		frame.getContentPane().add(txtDisplayName);
 
 		JButton btnV = new JButton("...");
 		btnV.setEnabled(false);
 		btnV.setBounds(391, 265, 43, 36);
 		frame.getContentPane().add(btnV);
-
-		XMLConfiguration xmlConfig = new XMLConfiguration();
-		xmlConfig.setProperty("key", "value1");
-		System.out.println(xmlConfig.getString("key"));
-
-		xmlConfig.setProperty("key", "value2");
-		System.out.println(xmlConfig.getString("key"));
-
+	}
+	
+	private void populateServerInfo(int serverIndex){
+		Server server = Config.getInstance().getServer(serverIndex);
+		txtAdress.setText(server.getAdress());
+		txtLogin.setText(server.getLogin());
+		txtPassword.setText(server.getPassword());
+		txtPort.setText(String.valueOf(server.getPort()));
 	}
 }
 
 class ServerListModel extends AbstractListModel {
 	private static final long serialVersionUID = 1L;
-	// здесь будем хранить данные
-	private ArrayList<Server> data;
 
 	public ServerListModel(){
-		data=Config.getInstance().getServersList();
 	}
 	// методы модели для выдачи данных списку
 	public int getSize() {
-		synchronized (data) {
-			return data.size();
-		}
+		return Config.getInstance().getServersCount();
 	}
 
 	public Object getElementAt(int idx) {
-		synchronized (data) {
-			return data.get(idx);
-		}
+		return Config.getInstance().getServer(idx);
 	}
 }
