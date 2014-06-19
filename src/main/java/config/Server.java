@@ -1,6 +1,12 @@
 package config;
 
 public class Server {
+	@Override
+	public String toString() {
+		return adress + ":" + port + " [login="
+				+ login + ", password=***]";
+	}
+
 	public Server(String adress, int port, String login, String password) {
 		super();
 		this.setAdress(adress);
