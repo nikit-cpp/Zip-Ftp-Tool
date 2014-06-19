@@ -51,6 +51,10 @@ public class SettingsWindow {
 	 * Create the application.
 	 */
 	public SettingsWindow() {
+		btnAdd = new JButton("+");
+		btnSave = new JButton("^");
+		btnDel = new JButton("-");
+		btnEdit = new JButton("...");
 		initialize();
 	}
 
@@ -59,6 +63,10 @@ public class SettingsWindow {
 	private JTextField txtPassword;
 	private JTextField txtPort;
 
+	private final JButton btnAdd;
+	private final JButton btnSave;
+	private final JButton btnDel;
+	private final JButton btnEdit;
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -70,15 +78,49 @@ public class SettingsWindow {
 		frame.setBounds(100, 100, 453, 504);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		
+		btnAdd.setBounds(391, 171, 43, 36);
+		frame.getContentPane().add(btnAdd);
+
+		btnSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// тут сохранение в модель...
+				
+				btnSave.setEnabled(false);
+				lockServerinfo();
+			}
+		});
+
+		btnSave.setEnabled(false);
+		btnSave.setBounds(283, 328, 46, 143);
+		frame.getContentPane().add(btnSave);
+		
+		
+		btnDel.setEnabled(false);
+		btnDel.setBounds(391, 218, 43, 36);
+		frame.getContentPane().add(btnDel);
 
 		JButton btnNewButton = new JButton("lookupFolder");
 
+		btnEdit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				unlockServerinfo();
+				btnSave.setEnabled(true);
+				lockServerListManipulatebuttons();
+			}
+		});
+		
+		btnEdit.setEnabled(false);
+		btnEdit.setBounds(391, 265, 43, 36);
+		frame.getContentPane().add(btnEdit);
+				
 		ServerListModel slm = new ServerListModel();
 		JList<String> list = new JList(slm);
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent arg0) {
 				int selected = ((JList)arg0.getSource()).getSelectedIndex();
 				populateServerInfo(selected);
+				unlockServerListManipulatebuttons();
 			}
 		});
 		
@@ -118,20 +160,6 @@ public class SettingsWindow {
 				"Включить кэширование информации о файлах на FTP");
 		checkBox.setBounds(34, 141, 400, 23);
 		frame.getContentPane().add(checkBox);
-
-		JButton button = new JButton("+");
-		button.setBounds(391, 171, 43, 36);
-		frame.getContentPane().add(button);
-
-		JButton button_1 = new JButton("^");
-		button_1.setEnabled(false);
-		button_1.setBounds(283, 328, 46, 143);
-		frame.getContentPane().add(button_1);
-
-		JButton button_2 = new JButton("-");
-		button_2.setEnabled(false);
-		button_2.setBounds(391, 218, 43, 36);
-		frame.getContentPane().add(button_2);
 
 		JButton btnC = new JButton("");
 		btnC.setBounds(312, 50, 17, 20);
@@ -180,11 +208,6 @@ public class SettingsWindow {
 		JButton btnNewButton_1 = new JButton("Завершить");
 		btnNewButton_1.setBounds(343, 448, 91, 23);
 		frame.getContentPane().add(btnNewButton_1);
-
-		JButton btnV = new JButton("...");
-		btnV.setEnabled(false);
-		btnV.setBounds(391, 265, 43, 36);
-		frame.getContentPane().add(btnV);
 	}
 	
 	private void populateServerInfo(int serverIndex){
@@ -194,6 +217,33 @@ public class SettingsWindow {
 		txtPassword.setText(server.getPassword());
 		txtPort.setText(String.valueOf(server.getPort()));
 	}
+	
+	private void unlockServerinfo(){
+		txtAdress.setEditable(true);
+		txtLogin.setEditable(true);
+		txtPassword.setEditable(true);
+		txtPort.setEditable(true);
+	}
+	
+	private void lockServerinfo(){
+		txtAdress.setEditable(false);
+		txtLogin.setEditable(false);
+		txtPassword.setEditable(false);
+		txtPort.setEditable(false);
+	}
+
+	private void lockServerListManipulatebuttons(){
+		btnEdit.setEnabled(false);
+		btnDel.setEnabled(false);
+		btnAdd.setEnabled(false);
+	}
+	
+	private void unlockServerListManipulatebuttons() {
+		btnEdit.setEnabled(true);
+		btnDel.setEnabled(true);
+		btnAdd.setEnabled(true);
+	}
+
 }
 
 class ServerListModel extends AbstractListModel {
