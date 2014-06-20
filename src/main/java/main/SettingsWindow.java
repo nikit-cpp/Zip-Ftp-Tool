@@ -12,17 +12,24 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import javax.swing.JApplet;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.AbstractListModel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import config.Config;
 import config.Server;
 
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class SettingsWindow {
 
@@ -70,6 +77,8 @@ public class SettingsWindow {
 	private final JButton btnDel;
 	private final JButton btnEdit;
 	private final JList<String> listServers;
+	
+	private JPopupMenu popup;
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -81,6 +90,10 @@ public class SettingsWindow {
 		frame.setBounds(100, 100, 453, 504);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		
+		// получаем всплывающее меню
+		popup = createPopupMenu();
+
 		
 		btnAdd.setBounds(391, 171, 43, 36);
 		frame.getContentPane().add(btnAdd);
@@ -182,6 +195,7 @@ public class SettingsWindow {
 		frame.getContentPane().add(button_5);
 
 		txtAdress = new JTextField();
+		txtAdress.addMouseListener(new ML());
 		txtAdress.setEditable(false);
 		txtAdress.setText("server.net");
 		txtAdress.setBounds(10, 359, 263, 20);
@@ -189,6 +203,7 @@ public class SettingsWindow {
 		txtAdress.setColumns(10);
 
 		txtLogin = new JTextField();
+		txtLogin.addMouseListener(new ML());
 		txtLogin.setEditable(false);
 		txtLogin.setText("login");
 		txtLogin.setColumns(10);
@@ -196,6 +211,7 @@ public class SettingsWindow {
 		frame.getContentPane().add(txtLogin);
 
 		txtPassword = new JTextField();
+		txtPassword.addMouseListener(new ML());
 		txtPassword.setEditable(false);
 		txtPassword.setText("password");
 		txtPassword.setColumns(10);
@@ -203,6 +219,7 @@ public class SettingsWindow {
 		frame.getContentPane().add(txtPassword);
 
 		txtPort = new JTextField();
+		txtPort.addMouseListener(new ML());
 		txtPort.setEditable(false);
 		txtPort.setText("port");
 		txtPort.setBounds(10, 390, 86, 20);
@@ -246,6 +263,32 @@ public class SettingsWindow {
 		btnEdit.setEnabled(true);
 		btnDel.setEnabled(true);
 		btnAdd.setEnabled(true);
+	}
+
+	// создаем наше всплывающее меню
+	private JPopupMenu createPopupMenu() {
+		// создаем само всплывающее меню
+		JPopupMenu pm = new JPopupMenu();
+		// создаем его пункты
+		JMenuItem cut = new JMenuItem("Вырезать");
+		JMenuItem copy = new JMenuItem("Копировать");
+		JMenuItem paste = new JMenuItem("Вставить");
+		// и добавляем все тем же методом add()
+		pm.add(cut);
+		pm.add(copy);
+		pm.add(paste);
+		return pm;
+	}
+
+	
+	// этот класс будет отслеживать щелчки мыши
+	class ML extends MouseAdapter {
+		public void mouseClicked(MouseEvent me) {
+			// проверим, что это правая кнопка, и покажем наше всплывающее меню
+			if (SwingUtilities.isRightMouseButton(me)) {
+				popup.show(((JTextField) me.getComponent()), me.getX(), me.getY());
+			}
+		}
 	}
 
 }
