@@ -1,5 +1,9 @@
 package config;
 
+import controller.Controller;
+import controller.Event;
+import controller.Event.Events;
+
 public class Server {
 	@Override
 	public String toString() {
@@ -21,6 +25,8 @@ public class Server {
 
 	public void setAdress(String adress) {
 		this.adress = adress;
+		// можно добавить при необходимости отслеживания редактирования сервера
+		// Controller.getInstance().fireEvent(new Event(Events.CONFIG_CHANGED, null));
 	}
 
 	public int getPort() {

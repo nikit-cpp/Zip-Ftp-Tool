@@ -4,10 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+
+import controller.Controller;
+import controller.Event;
+import controller.Event.Events;
 
 
 public class Config {
@@ -87,8 +92,34 @@ public class Config {
 		return serversList.size();
 	}
 	
+	private boolean checkServerIndex(int index){
+		if(index>=serversList.size() || index<0)
+			return false;
+		return true;
+	}
+	
 	synchronized public Server getServer(int index){
+		if(!checkServerIndex(index))
+			return null;
 		return serversList.get(index);
+	}
+	
+	synchronized public void setServer(int index, Server server){
+		if(!checkServerIndex(index) || server==null)
+			return;
+		serversList.set(index, server);
+	}
+	
+	public synchronized void removeServer(int index) {
+		if(!checkServerIndex(index))
+			return;
+		serversList.remove(index);
+		Controller.getInstance().fireEvent(new Event(Events.SERVERS_LIST_CHANGED, null));
+	}
+	
+	public synchronized void addServer(Server server) {
+		serversList.add(server);
+		Controller.getInstance().fireEvent(new Event(Events.SERVERS_LIST_CHANGED, null));
 	}
 	
 	private void readServers() {

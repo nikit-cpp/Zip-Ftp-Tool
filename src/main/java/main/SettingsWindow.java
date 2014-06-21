@@ -24,6 +24,10 @@ import javax.swing.SwingUtilities;
 
 import config.Config;
 import config.Server;
+import controller.Controller;
+import controller.Event;
+import controller.Event.Events;
+import controller.Listener;
 
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
@@ -31,7 +35,7 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class SettingsWindow {
+public class SettingsWindow implements Listener{
 
 	private JFrame frame;
 	private JTextField txtE;
@@ -54,16 +58,18 @@ public class SettingsWindow {
 		});
 	}
 
+	private final ServerListModel serverListModel;
 	/**
 	 * Create the application.
 	 */
 	public SettingsWindow() {
+		Controller.getInstance().addListener(this);
 		btnAdd = new JButton("+");
 		btnSave = new JButton("^");
 		btnDel = new JButton("-");
 		btnEdit = new JButton("...");
-		ServerListModel slm = new ServerListModel();
-		listServers = new JList(slm);
+		serverListModel = new ServerListModel();
+		listServers = new JList(serverListModel);
 		initialize();
 	}
 
@@ -96,16 +102,32 @@ public class SettingsWindow {
 
 		
 		btnAdd.setBounds(391, 171, 43, 36);
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Server newServer = new Server("www.server.net", 21, "login_", "pass_");
+				Config.getInstance().addServer(newServer);
+			}
+		});
+
 		frame.getContentPane().add(btnAdd);
 
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// тут сохранение в модель...
-				
+				int selected = listServers.getSelectedIndex();
+				Server editableServer = Config.getInstance().getServer(selected);
+				if(editableServer!=null){
+					editableServer.setAdress(txtAdress.getText());
+					editableServer.setLogin(txtLogin.getText());
+					editableServer.setPassword(txtPassword.getText());
+					editableServer.setPort(Integer.parseInt(txtPort.getText()));
+				}
+								
 				btnSave.setEnabled(false);
 				lockServerinfo();
 				unlockServerListManipulatebuttons();
 				listServers.setEnabled(true);
+				Controller.getInstance().fireEvent(new Event(Events.SERVERS_LIST_CHANGED, null));
 			}
 		});
 
@@ -115,8 +137,14 @@ public class SettingsWindow {
 		
 		
 		btnDel.setEnabled(false);
+		btnDel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Config.getInstance().removeServer(listServers.getSelectedIndex());
+			}
+		});
 		btnDel.setBounds(391, 218, 43, 36);
 		frame.getContentPane().add(btnDel);
+
 
 		JButton btnNewButton = new JButton("lookupFolder");
 
@@ -233,6 +261,8 @@ public class SettingsWindow {
 	
 	private void populateServerInfo(int serverIndex){
 		Server server = Config.getInstance().getServer(serverIndex);
+		if(server==null)
+			return;
 		txtAdress.setText(server.getAdress());
 		txtLogin.setText(server.getLogin());
 		txtPassword.setText(server.getPassword());
@@ -291,6 +321,27 @@ public class SettingsWindow {
 		}
 	}
 
+
+	@Override
+	public void onEvent(final Event event) {
+		if (event == null)
+			return;
+
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				switch (event.type) {
+				case SERVERS_LIST_CHANGED:
+					listServers.setListData(serverListModel.getData());
+					System.out.println("CONFIG_CHANGED");
+					break;
+				default:
+					break;
+				}
+			}
+		});
+
+	}
+
 }
 
 class ServerListModel extends AbstractListModel {
@@ -305,5 +356,13 @@ class ServerListModel extends AbstractListModel {
 
 	public Object getElementAt(int idx) {
 		return Config.getInstance().getServer(idx);
+	}
+	
+	public String[] getData(){
+		String a[] = new String[getSize()];
+		for(int i=0; i<getSize(); ++i){
+			a[i]=getElementAt(i).toString();
+		}
+		return a;
 	}
 }
