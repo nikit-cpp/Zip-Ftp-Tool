@@ -206,21 +206,21 @@ public class SettingsWindow implements Listener{
 		checkBox.setBounds(34, 141, 400, 23);
 		frame.getContentPane().add(checkBox);
 
-		JButton btnC = new JButton("");
-		btnC.setBounds(312, 50, 17, 20);
-		frame.getContentPane().add(btnC);
+		JButton btnResetLookupFolder = new JButton("");
+		btnResetLookupFolder.setBounds(312, 50, 17, 20);
+		frame.getContentPane().add(btnResetLookupFolder);
 
-		JButton button_3 = new JButton("");
-		button_3.setBounds(312, 81, 17, 20);
-		frame.getContentPane().add(button_3);
+		JButton btnResetDestFolder = new JButton("");
+		btnResetDestFolder.setBounds(312, 81, 17, 20);
+		frame.getContentPane().add(btnResetDestFolder);
 
-		JButton button_4 = new JButton("");
-		button_4.setBounds(312, 113, 17, 20);
-		frame.getContentPane().add(button_4);
+		JButton btnResetFtpFolder = new JButton("");
+		btnResetFtpFolder.setBounds(312, 113, 17, 20);
+		frame.getContentPane().add(btnResetFtpFolder);
 
-		JButton button_5 = new JButton("");
-		button_5.setBounds(10, 144, 17, 20);
-		frame.getContentPane().add(button_5);
+		JButton btnResetPoolEnable = new JButton("");
+		btnResetPoolEnable.setBounds(10, 144, 17, 20);
+		frame.getContentPane().add(btnResetPoolEnable);
 
 		txtAdress = new JTextField();
 		txtAdress.addMouseListener(new ML());
@@ -254,9 +254,17 @@ public class SettingsWindow implements Listener{
 		frame.getContentPane().add(txtPort);
 		txtPort.setColumns(10);
 
-		JButton btnNewButton_1 = new JButton("Завершить");
-		btnNewButton_1.setBounds(343, 448, 91, 23);
-		frame.getContentPane().add(btnNewButton_1);
+		JButton btnOk = new JButton("Ок");
+		btnOk.setBounds(343, 448, 91, 23);
+		frame.getContentPane().add(btnOk);
+		
+		JButton btnCancel = new JButton("Отмена");
+		btnCancel.setBounds(343, 419, 91, 23);
+		frame.getContentPane().add(btnCancel);
+		
+		JButton btnApply = new JButton("Применить");
+		btnApply.setBounds(343, 388, 91, 23);
+		frame.getContentPane().add(btnApply);
 	}
 	
 	private void populateServerInfo(int serverIndex){
@@ -341,7 +349,6 @@ public class SettingsWindow implements Listener{
 		});
 
 	}
-
 }
 
 class ServerListModel extends AbstractListModel {
