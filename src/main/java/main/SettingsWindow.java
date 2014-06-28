@@ -19,6 +19,7 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.AbstractListModel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -34,6 +35,8 @@ import javax.swing.event.ListSelectionEvent;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
+import javax.swing.JScrollPane;
 
 public class SettingsWindow implements Listener{
 
@@ -69,7 +72,6 @@ public class SettingsWindow implements Listener{
 		btnDel = new JButton("-");
 		btnEdit = new JButton("...");
 		serverListModel = new ServerListModel();
-		listServers = new JList(serverListModel);
 		initialize();
 	}
 
@@ -82,7 +84,7 @@ public class SettingsWindow implements Listener{
 	private final JButton btnSave;
 	private final JButton btnDel;
 	private final JButton btnEdit;
-	private final JList<String> listServers;
+	private JList<String> listServers;
 	
 	private JPopupMenu popup;
 	/**
@@ -113,26 +115,12 @@ public class SettingsWindow implements Listener{
 
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// тут сохранение в модель...
-				int selected = listServers.getSelectedIndex();
-				Server editableServer = Config.getInstance().getServer(selected);
-				if(editableServer!=null){
-					editableServer.setAdress(txtAdress.getText());
-					editableServer.setLogin(txtLogin.getText());
-					editableServer.setPassword(txtPassword.getText());
-					editableServer.setPort(Integer.parseInt(txtPort.getText()));
-				}
-								
-				btnSave.setEnabled(false);
-				lockServerinfo();
-				unlockServerListManipulatebuttons();
-				listServers.setEnabled(true);
-				Controller.getInstance().fireEvent(new Event(Events.SERVERS_LIST_CHANGED, null));
+				endServerEditing();
 			}
 		});
 
 		btnSave.setEnabled(false);
-		btnSave.setBounds(283, 328, 46, 143);
+		btnSave.setBounds(283, 359, 46, 112);
 		frame.getContentPane().add(btnSave);
 		
 		
@@ -150,27 +138,13 @@ public class SettingsWindow implements Listener{
 
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				unlockServerinfo();
-				btnSave.setEnabled(true);
-				lockServerListManipulatebuttons();
-				listServers.setEnabled(false);
+				startServerEditing();
 			}
 		});
 		
 		btnEdit.setEnabled(false);
 		btnEdit.setBounds(391, 265, 43, 36);
 		frame.getContentPane().add(btnEdit);
-				
-		listServers.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent arg0) {
-				int selected = ((JList)arg0.getSource()).getSelectedIndex();
-				populateServerInfo(selected);
-				unlockServerListManipulatebuttons();
-			}
-		});
-		
-		listServers.setBounds(10, 171, 371, 146);
-		frame.getContentPane().add(listServers);
 
 		btnNewButton.setBounds(339, 50, 95, 23);
 		frame.getContentPane().add(btnNewButton);
@@ -265,6 +239,55 @@ public class SettingsWindow implements Listener{
 		JButton btnApply = new JButton("Применить");
 		btnApply.setBounds(343, 388, 91, 23);
 		frame.getContentPane().add(btnApply);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 175, 371, 173);
+		frame.getContentPane().add(scrollPane);
+		listServers = new JList(serverListModel);
+		scrollPane.setViewportView(listServers);
+		
+		listServers.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent arg0) {
+				int selected = ((JList)arg0.getSource()).getSelectedIndex();
+				populateServerInfo(selected);
+				unlockServerListManipulatebuttons();
+			}
+		});
+		
+		listServers.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					// получаем элемент и покажем его
+					//int pos = listServers.locationToIndex(e.getPoint());
+					startServerEditing();
+				}
+			}
+		});
+	}
+	
+	private void startServerEditing(){
+		unlockServerinfo();
+		btnSave.setEnabled(true);
+		lockServerListManipulatebuttons();
+		listServers.setEnabled(false);
+	}
+	
+	private void endServerEditing(){
+		// тут сохранение в модель...
+		int selected = listServers.getSelectedIndex();
+		Server editableServer = Config.getInstance().getServer(selected);
+		if(editableServer!=null){
+			editableServer.setAdress(txtAdress.getText());
+			editableServer.setLogin(txtLogin.getText());
+			editableServer.setPassword(txtPassword.getText());
+			editableServer.setPort(Integer.parseInt(txtPort.getText()));
+		}
+						
+		btnSave.setEnabled(false);
+		lockServerinfo();
+		unlockServerListManipulatebuttons();
+		listServers.setEnabled(true);
+		Controller.getInstance().fireEvent(new Event(Events.SERVERS_LIST_CHANGED, null));
 	}
 	
 	private void populateServerInfo(int serverIndex){
@@ -319,7 +342,7 @@ public class SettingsWindow implements Listener{
 	}
 
 	
-	// этот класс будет отслеживать щелчки мыши
+	// Контекстное меню. этот класс будет отслеживать щелчки мыши
 	class ML extends MouseAdapter {
 		public void mouseClicked(MouseEvent me) {
 			// проверим, что это правая кнопка, и покажем наше всплывающее меню
