@@ -97,6 +97,7 @@ public class SettingsWindow implements Listener{
 	private JTextField txtLogin;
 	private JTextField txtPassword;
 	private JTextField txtPort;
+	private ContextMenuMouseListener cml;
 
 	private final JButton btnAdd;
 	private final JButton btnSave;
@@ -104,7 +105,6 @@ public class SettingsWindow implements Listener{
 	private final JButton btnEdit;
 	private JList<String> listServers;
 	
-	private JPopupMenu popup;
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -116,10 +116,6 @@ public class SettingsWindow implements Listener{
 		frame.setBounds(100, 100, 453, 504);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
-		
-		// получаем всплывающее меню
-		popup = createPopupMenu();
-
 		
 		btnAdd.setBounds(391, 171, 43, 36);
 		btnAdd.addActionListener(new ActionListener() {
@@ -282,9 +278,10 @@ public class SettingsWindow implements Listener{
 
 		populateTextFieldsAndCheckbox();
 
+		cml = new ContextMenuMouseListener();
 		
 		txtAdress = new JTextField();
-		txtAdress.addMouseListener(new ML());
+		txtAdress.addMouseListener(cml);
 		txtAdress.setEditable(false);
 		txtAdress.setText("server.net");
 		txtAdress.setBounds(10, 359, 263, 20);
@@ -292,7 +289,7 @@ public class SettingsWindow implements Listener{
 		txtAdress.setColumns(10);
 
 		txtLogin = new JTextField();
-		txtLogin.addMouseListener(new ML());
+		txtLogin.addMouseListener(cml);
 		txtLogin.setEditable(false);
 		txtLogin.setText("login");
 		txtLogin.setColumns(10);
@@ -300,7 +297,7 @@ public class SettingsWindow implements Listener{
 		frame.getContentPane().add(txtLogin);
 
 		txtPassword = new JTextField();
-		txtPassword.addMouseListener(new ML());
+		txtPassword.addMouseListener(cml);
 		txtPassword.setEditable(false);
 		txtPassword.setText("password");
 		txtPassword.setColumns(10);
@@ -308,7 +305,7 @@ public class SettingsWindow implements Listener{
 		frame.getContentPane().add(txtPassword);
 
 		txtPort = new JTextField();
-		txtPort.addMouseListener(new ML());
+		txtPort.addMouseListener(cml);
 		txtPort.setEditable(false);
 		txtPort.setText("port");
 		txtPort.setBounds(10, 390, 86, 20);
@@ -454,18 +451,6 @@ public class SettingsWindow implements Listener{
 		pm.add(paste);
 		return pm;
 	}
-
-	
-	// Контекстное меню. этот класс будет отслеживать щелчки мыши
-	class ML extends MouseAdapter {
-		public void mouseClicked(MouseEvent me) {
-			// проверим, что это правая кнопка, и покажем наше всплывающее меню
-			if (SwingUtilities.isRightMouseButton(me)) {
-				popup.show(((JTextField) me.getComponent()), me.getX(), me.getY());
-			}
-		}
-	}
-
 
 	@Override
 	public void onEvent(final Event event) {
