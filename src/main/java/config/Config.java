@@ -62,11 +62,12 @@ public class Config {
 		return xmlConfig.getBoolean(e.toString());
 	}
 	
-	synchronized void reset(Settings e){
+	synchronized public void reset(Settings e){
 		set(e, defaults.get(e));
 	}
 	
-	private void set(Settings e, Object object) {
+	public void set(Settings e, Object object) {
+		System.out.println("Config: set \"" + object + "\" " + e);
 		switch(e){
 		case DEST_FOLDER:
 		case FTP_FOLDER:
@@ -79,6 +80,7 @@ public class Config {
 		default:
 			break;
 		}
+		Controller.getInstance().fireEvent(new Event(Events.CONFIG_CHANGED, null));
 	}
 	
 	private ArrayList<Server> serversList = new ArrayList<Server>();

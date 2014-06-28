@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 
 import config.Config;
 import config.Server;
+import config.Settings;
 import controller.Controller;
 import controller.Event;
 import controller.Event.Events;
@@ -38,13 +39,18 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JScrollPane;
 
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import javax.swing.JPanel;
+
 public class SettingsWindow implements Listener{
 
 	private JFrame frame;
-	private JTextField txtE;
-	private JTextField txtE_1;
-	private JTextField txtpublichtml;
-
+	private JTextField txtLookupFolder;
+	private JTextField txtDestFolder;
+	private JTextField txtFtpFolder;
+	private final JCheckBox chbPoolEnable;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -72,6 +78,7 @@ public class SettingsWindow implements Listener{
 		btnDel = new JButton("-");
 		btnEdit = new JButton("...");
 		serverListModel = new ServerListModel();
+		chbPoolEnable = new JCheckBox("Включить кэширование информации о файлах на FTP");
 		initialize();
 	}
 
@@ -94,7 +101,7 @@ public class SettingsWindow implements Listener{
 		frame = new JFrame();
 		frame.setTitle("Настройки");
 		frame.setResizable(false);
-		frame.setType(Type.UTILITY);
+		// frame.setType(Type.UTILITY);
 		frame.setBounds(100, 100, 453, 504);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
@@ -149,53 +156,94 @@ public class SettingsWindow implements Listener{
 		btnNewButton.setBounds(339, 50, 95, 23);
 		frame.getContentPane().add(btnNewButton);
 
-		txtE = new JTextField();
-		txtE.setText("C:\\Мои документы\\МИРЭА\\Защита Информации");
-		txtE.setBounds(10, 51, 298, 20);
-		frame.getContentPane().add(txtE);
-		txtE.setColumns(10);
+		txtLookupFolder = new JTextField();
+		txtLookupFolder.setBounds(10, 51, 298, 20);
+		frame.getContentPane().add(txtLookupFolder);
+		txtLookupFolder.setColumns(10);
+		txtLookupFolder.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				configSetString(Settings.LOOKUP_FOLDER, txtLookupFolder.getText());
+			}
+		});
 
-		txtE_1 = new JTextField();
-		txtE_1.setText("C:\\Мои документы\\МИРЭА\\Защита Информации");
-		txtE_1.setColumns(10);
-		txtE_1.setBounds(10, 82, 298, 20);
-		frame.getContentPane().add(txtE_1);
+		txtDestFolder = new JTextField();
+		txtDestFolder.setColumns(10);
+		frame.getContentPane().add(txtDestFolder);
+		txtDestFolder.setBounds(10, 82, 298, 20);
+		txtDestFolder.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				configSetString(Settings.DEST_FOLDER, txtDestFolder.getText());
+			}
+		});
 
 		JButton btnDestfolder = new JButton("destFolder");
 		btnDestfolder.setBounds(339, 81, 95, 23);
 		frame.getContentPane().add(btnDestfolder);
 
-		txtpublichtml = new JTextField();
-		txtpublichtml.setText("/public");
-		txtpublichtml.setColumns(10);
-		txtpublichtml.setBounds(10, 114, 298, 20);
-		frame.getContentPane().add(txtpublichtml);
+		txtFtpFolder = new JTextField();
+		txtFtpFolder.setColumns(10);
+		txtFtpFolder.setBounds(10, 114, 298, 20);
+		frame.getContentPane().add(txtFtpFolder);
+		txtFtpFolder.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				configSetString(Settings.FTP_FOLDER, txtFtpFolder.getText());
+			}
+		});
 
 		JButton btnFtpfolder = new JButton("ftpFolder");
 		btnFtpfolder.setBounds(339, 113, 95, 23);
 		frame.getContentPane().add(btnFtpfolder);
 
-		JCheckBox checkBox = new JCheckBox(
-				"Включить кэширование информации о файлах на FTP");
-		checkBox.setBounds(34, 141, 400, 23);
-		frame.getContentPane().add(checkBox);
+		chbPoolEnable.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Config.getInstance().set(Settings.IS_FTP_FILES_POOL, chbPoolEnable.isSelected());
+			}
+		});
+		chbPoolEnable.setBounds(34, 141, 400, 23);
+		frame.getContentPane().add(chbPoolEnable);
 
 		JButton btnResetLookupFolder = new JButton("");
+		btnResetLookupFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Config.getInstance().reset(Settings.LOOKUP_FOLDER);
+			}
+		});
 		btnResetLookupFolder.setBounds(312, 50, 17, 20);
 		frame.getContentPane().add(btnResetLookupFolder);
 
 		JButton btnResetDestFolder = new JButton("");
+		btnResetDestFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Config.getInstance().reset(Settings.DEST_FOLDER);
+			}
+		});
 		btnResetDestFolder.setBounds(312, 81, 17, 20);
 		frame.getContentPane().add(btnResetDestFolder);
 
 		JButton btnResetFtpFolder = new JButton("");
 		btnResetFtpFolder.setBounds(312, 113, 17, 20);
 		frame.getContentPane().add(btnResetFtpFolder);
+		btnResetFtpFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Config.getInstance().reset(Settings.FTP_FOLDER);
+			}
+		});
 
 		JButton btnResetPoolEnable = new JButton("");
 		btnResetPoolEnable.setBounds(10, 144, 17, 20);
 		frame.getContentPane().add(btnResetPoolEnable);
+		btnResetPoolEnable.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Config.getInstance().reset(Settings.IS_FTP_FILES_POOL);
+			}
+		});
 
+		populateTextFieldsAndCheckbox();
+
+		
 		txtAdress = new JTextField();
 		txtAdress.addMouseListener(new ML());
 		txtAdress.setEditable(false);
@@ -263,6 +311,18 @@ public class SettingsWindow implements Listener{
 				}
 			}
 		});
+	}
+	
+	private void populateTextFieldsAndCheckbox(){
+		txtLookupFolder.setText(Config.getInstance().getString(Settings.LOOKUP_FOLDER));
+		txtDestFolder.setText(Config.getInstance().getString(Settings.DEST_FOLDER));
+		txtFtpFolder.setText(Config.getInstance().getString(Settings.FTP_FOLDER));
+
+		chbPoolEnable.setSelected(Config.getInstance().getBoolean(Settings.IS_FTP_FILES_POOL));
+	}
+	
+	private void configSetString(Settings e, String s){
+		Config.getInstance().set(e, s);
 	}
 	
 	private void startServerEditing(){
@@ -362,8 +422,15 @@ public class SettingsWindow implements Listener{
 			public void run() {
 				switch (event.type) {
 				case SERVERS_LIST_CHANGED:
+					int pos = listServers.getSelectedIndex();
 					listServers.setListData(serverListModel.getData());
-					System.out.println("CONFIG_CHANGED");
+					System.out.println("processed SERVERS_LIST_CHANGED event in gui.");
+					if(pos>=0 && pos<Config.getInstance().getServersCount()){
+						listServers.setSelectedIndex(pos);
+					}
+					break;
+				case CONFIG_CHANGED:
+					populateTextFieldsAndCheckbox();
 					break;
 				default:
 					break;
