@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JTextField;
@@ -9,11 +10,16 @@ import java.awt.Window.Type;
 
 import javax.swing.JButton;
 
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JApplet;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
@@ -33,6 +39,7 @@ import controller.Listener;
 
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.text.JTextComponent;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -41,7 +48,11 @@ import javax.swing.JScrollPane;
 
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+
 import javax.swing.JPanel;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 public class SettingsWindow implements Listener{
 
@@ -141,7 +152,16 @@ public class SettingsWindow implements Listener{
 		frame.getContentPane().add(btnDel);
 
 
-		JButton btnNewButton = new JButton("lookupFolder");
+		JButton btnSelectLookupFolder = new JButton("lookupFolder");
+		btnSelectLookupFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String path =chooseDirectory();
+				System.out.println("выбрали: " + path);
+				if(path!=null){
+					Config.getInstance().set(Settings.LOOKUP_FOLDER, path);
+				}
+			}
+		});
 
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -153,8 +173,8 @@ public class SettingsWindow implements Listener{
 		btnEdit.setBounds(391, 265, 43, 36);
 		frame.getContentPane().add(btnEdit);
 
-		btnNewButton.setBounds(339, 50, 95, 23);
-		frame.getContentPane().add(btnNewButton);
+		btnSelectLookupFolder.setBounds(339, 50, 95, 23);
+		frame.getContentPane().add(btnSelectLookupFolder);
 
 		txtLookupFolder = new JTextField();
 		txtLookupFolder.setBounds(10, 51, 298, 20);
@@ -178,9 +198,18 @@ public class SettingsWindow implements Listener{
 			}
 		});
 
-		JButton btnDestfolder = new JButton("destFolder");
-		btnDestfolder.setBounds(339, 81, 95, 23);
-		frame.getContentPane().add(btnDestfolder);
+		JButton btnSelectDestFolder = new JButton("destFolder");
+		btnSelectDestFolder.setBounds(339, 81, 95, 23);
+		frame.getContentPane().add(btnSelectDestFolder);
+		btnSelectDestFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String path =chooseDirectory();
+				System.out.println("выбрали: " + path);
+				if(path!=null){
+					Config.getInstance().set(Settings.DEST_FOLDER, path);
+				}
+			}
+		});
 
 		txtFtpFolder = new JTextField();
 		txtFtpFolder.setColumns(10);
@@ -193,10 +222,20 @@ public class SettingsWindow implements Listener{
 			}
 		});
 
-		JButton btnFtpfolder = new JButton("ftpFolder");
-		btnFtpfolder.setBounds(339, 113, 95, 23);
-		frame.getContentPane().add(btnFtpfolder);
-
+		JButton btnSelectFtpFolder = new JButton("ftpFolder");
+		btnSelectFtpFolder.setBounds(339, 113, 95, 23);
+		frame.getContentPane().add(btnSelectFtpFolder);
+		btnSelectFtpFolder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String path =chooseDirectory();
+				System.out.println("выбрали: " + path);
+				if(path!=null){
+					Config.getInstance().set(Settings.FTP_FOLDER, path);
+				}
+			}
+		});
+		
+		
 		chbPoolEnable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Config.getInstance().set(Settings.IS_FTP_FILES_POOL, chbPoolEnable.isSelected());
@@ -391,6 +430,15 @@ public class SettingsWindow implements Listener{
 		btnDel.setEnabled(true);
 		btnAdd.setEnabled(true);
 	}
+	
+	private String chooseDirectory(){
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+        	return fileChooser.getSelectedFile().getPath();
+        }
+        return null;
+	}
 
 	// создаем наше всплывающее меню
 	private JPopupMenu createPopupMenu() {
@@ -468,4 +516,117 @@ class ServerListModel extends AbstractListModel {
 		}
 		return a;
 	}
+}
+
+// http://stackoverflow.com/questions/2793940/why-right-click-is-not-working-on-java-application/2793959#2793959
+class ContextMenuMouseListener extends MouseAdapter {
+    private JPopupMenu popup = new JPopupMenu();
+
+    private Action cutAction;
+    private Action copyAction;
+    private Action pasteAction;
+    private Action undoAction;
+    private Action selectAllAction;
+
+    private JTextComponent textComponent;
+    private String savedString = "";
+    private Actions lastActionSelected;
+
+    private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL };
+
+    public ContextMenuMouseListener() {
+        undoAction = new AbstractAction("Undo") {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                    textComponent.setText("");
+                    textComponent.replaceSelection(savedString);
+
+                    lastActionSelected = Actions.UNDO;
+            }
+        };
+
+        popup.add(undoAction);
+        popup.addSeparator();
+
+        cutAction = new AbstractAction("Cut") {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                lastActionSelected = Actions.CUT;
+                savedString = textComponent.getText();
+                textComponent.cut();
+            }
+        };
+
+        popup.add(cutAction);
+
+        copyAction = new AbstractAction("Copy") {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                lastActionSelected = Actions.COPY;
+                textComponent.copy();
+            }
+        };
+
+        popup.add(copyAction);
+
+        pasteAction = new AbstractAction("Paste") {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                lastActionSelected = Actions.PASTE;
+                savedString = textComponent.getText();
+                textComponent.paste();
+            }
+        };
+
+        popup.add(pasteAction);
+        popup.addSeparator();
+
+        selectAllAction = new AbstractAction("Select All") {
+
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                lastActionSelected = Actions.SELECT_ALL;
+                textComponent.selectAll();
+            }
+        };
+
+        popup.add(selectAllAction);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
+            if (!(e.getSource() instanceof JTextComponent)) {
+                return;
+            }
+
+            textComponent = (JTextComponent) e.getSource();
+            textComponent.requestFocus();
+
+            boolean enabled = textComponent.isEnabled();
+            boolean editable = textComponent.isEditable();
+            boolean nonempty = !(textComponent.getText() == null || textComponent.getText().equals(""));
+            boolean marked = textComponent.getSelectedText() != null;
+
+            boolean pasteAvailable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null).isDataFlavorSupported(DataFlavor.stringFlavor);
+
+            undoAction.setEnabled(enabled && editable && (lastActionSelected == Actions.CUT || lastActionSelected == Actions.PASTE));
+            cutAction.setEnabled(enabled && editable && marked);
+            copyAction.setEnabled(enabled && marked);
+            pasteAction.setEnabled(enabled && editable && pasteAvailable);
+            selectAllAction.setEnabled(enabled && nonempty);
+
+            int nx = e.getX();
+
+            if (nx > 500) {
+                nx = nx - popup.getSize().width;
+            }
+
+            popup.show(e.getComponent(), nx, e.getY() - popup.getSize().height);
+        }
+    }
 }
