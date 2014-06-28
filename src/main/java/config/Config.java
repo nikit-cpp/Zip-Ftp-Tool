@@ -124,6 +124,9 @@ public class Config {
 		Controller.getInstance().fireEvent(new Event(Events.SERVERS_LIST_CHANGED, null));
 	}
 	
+	/**
+	 * Считывает серверы из xmlConfig в serversList.
+	 */
 	private void readServers() {
 		// получить количество_серверов
 		//int size = xmlConfig.getList("servers.server.url").size();
@@ -144,32 +147,45 @@ public class Config {
 			}
 		} 
 	}
+	
+	/**
+	 * Сохраняет серверы из serversList в xmlConfig.
+	 */
+	private void saveServers(){
+		System.out.println("saveServers();");
+		for(int i=0; i<serversList.size(); ++i){
+			Server server=serversList.get(i);
+			xmlConfig.setProperty(buildPropertyString(i)+".url", server.getAdress());
+			xmlConfig.setProperty(buildPropertyString(i)+".port", String.valueOf(server.getPort()));
+			xmlConfig.setProperty(buildPropertyString(i)+".login", server.getLogin());
+			xmlConfig.setProperty(buildPropertyString(i)+".password", server.getPassword());
+		}
+	}
+	
+	private String buildPropertyString(int i){
+		return "servers.server("+i+")";
+	}
 
 	private void createDefaultConfigFile() throws ConfigurationException{
 		xmlConfig = new XMLConfiguration();
 		xmlConfig.setEncoding("UTF-8");
 		xmlConfig.setFileName(filename);
 		xmlConfig.setRootElementName("sample-xml-configuration");
-//		xmlConfig.addProperty(lookupFolder, "E:\\Мои документы\\МИРЭА\\Защита Информации");
-//		xmlConfig.addProperty(destFolder, "E:\\Мои документы\\МИРЭА\\Защита Информации");
-//		xmlConfig.addProperty(ftpFolder, "public_html");
-//		xmlConfig.addProperty(isFtpFilesPool, "true");
-//		
-//		xmlConfig.addProperty("servers.server(0).url", "ftp.server1.com");
-//		xmlConfig.addProperty("servers.server(0).port", "21");
-//		xmlConfig.addProperty("servers.server(0).login", "login1");
-//		xmlConfig.addProperty("servers.server(0).password", "pass1");
-//
-//		xmlConfig.addProperty("servers.server(1).url", "1.2.3.4");
-//		xmlConfig.addProperty("servers.server(1).port", "21");
-//		xmlConfig.addProperty("servers.server(1).login", "login2");
-//		xmlConfig.addProperty("servers.server(1).password", "pass2");
 
-		xmlConfig.save();
+		reset(Settings.DEST_FOLDER);
+		reset(Settings.FTP_FOLDER);
+		reset(Settings.LOOKUP_FOLDER);
+		reset(Settings.IS_FTP_FILES_POOL);
+
+		addServer(new Server("ftp.server1.com", 21, "login1", "password1"));
+		addServer(new Server("1.2.3.4", 21, "login2", "password2"));
+
+		saveConfig();
 	}
 	
 	public void saveConfig(){
 		try {
+			saveServers();
 			xmlConfig.save();
 		} catch (ConfigurationException e) {
 			e.printStackTrace();

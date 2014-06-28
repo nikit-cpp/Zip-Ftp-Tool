@@ -275,17 +275,23 @@ public class SettingsWindow implements Listener{
 		txtPort.setBounds(10, 390, 86, 20);
 		frame.getContentPane().add(txtPort);
 		txtPort.setColumns(10);
-
-		JButton btnOk = new JButton("Ок");
-		btnOk.setBounds(343, 448, 91, 23);
-		frame.getContentPane().add(btnOk);
 		
-		JButton btnCancel = new JButton("Отмена");
-		btnCancel.setBounds(343, 419, 91, 23);
-		frame.getContentPane().add(btnCancel);
+		JButton btnClose = new JButton("Закрыть");
+		btnClose.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Controller.getInstance().fireEvent(new Event(Events.EXIT, null));
+			}
+		});
+		btnClose.setBounds(346, 448, 91, 23);
+		frame.getContentPane().add(btnClose);
 		
 		JButton btnApply = new JButton("Применить");
-		btnApply.setBounds(343, 388, 91, 23);
+		btnApply.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Config.getInstance().saveConfig();
+			}
+		});
+		btnApply.setBounds(346, 419, 91, 23);
 		frame.getContentPane().add(btnApply);
 		
 		JScrollPane scrollPane = new JScrollPane();
