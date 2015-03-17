@@ -54,7 +54,7 @@ import javax.swing.JPanel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-public class SettingsWindow implements Listener{
+public class ConfigEditor implements Listener{
 
 	private JFrame frame;
 	private JTextField txtLookupFolder;
@@ -69,7 +69,7 @@ public class SettingsWindow implements Listener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					SettingsWindow window = new SettingsWindow();
+					ConfigEditor window = new ConfigEditor();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -82,7 +82,7 @@ public class SettingsWindow implements Listener{
 	/**
 	 * Create the application.
 	 */
-	public SettingsWindow() {
+	public ConfigEditor() {
 		Controller.getInstance().addListener(this);
 		btnAdd = new JButton("+");
 		btnSave = new JButton("^");
